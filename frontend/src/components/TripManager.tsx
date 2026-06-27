@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
-import { Container, Card, Form, Button, Alert, ListGroup } from 'react-bootstrap';
-import { Navigation, CheckCircle, Package } from 'lucide-react';
+import { Navigation, CheckCircle, Package, AlertCircle, Check } from 'lucide-react';
 import axios from 'axios';
+import './TripManager.css';
 
 // --- Checklist Item-ന് വേണ്ടിയുള്ള Interface ---
 interface ChecklistItem {
@@ -29,7 +29,7 @@ const TripManager: React.FC = () => {
 
     try {
       // Mocking user_id = 1
-      const response = await axios.post('http://localhost:8000/trips/?user_id=1', {
+      await axios.post('http://localhost:8000/trips/?user_id=1', {
         trip_type: tripType
       });
       
@@ -58,83 +58,86 @@ const TripManager: React.FC = () => {
   };
 
   return (
-    <Container className="py-5" style={{ maxWidth: '800px' }}>
-      <div className="mb-4 pb-3 border-bottom">
-        <h1 className="h3 fw-bold text-dark mb-1">Trip Manager</h1>
-        <p className="text-secondary mb-0">Plan your journey and pack your essentials.</p>
-      </div>
+    <div className="tm-page">
+      <div className="tm-container">
+        <div className="tm-header">
+          <h1 className="tm-title">Trip Manager</h1>
+          <p className="tm-subtitle">Plan your journey and pack your essentials.</p>
+        </div>
 
-      {error && <Alert variant="danger">{error}</Alert>}
-      {success && <Alert variant="success">Trip created successfully! Here is your checklist.</Alert>}
+        {error && (
+          <div className="tm-alert tm-alert-danger">
+            <AlertCircle size={18} />
+            {error}
+          </div>
+        )}
+        
+        {success && (
+          <div className="tm-alert tm-alert-success">
+            <Check size={18} />
+            Trip created successfully! Here is your checklist.
+          </div>
+        )}
 
-      <Card className="shadow-sm border-0 mb-4">
-        <Card.Body className="p-4">
-          <h4 className="h5 mb-4 d-flex align-items-center gap-2">
-            <Navigation size={20} className="text-primary" /> 
+        <div className="tm-card">
+          <div className="tm-card-title">
+            <Navigation size={20} className="icon-blue" />
             Create a New Trip
-          </h4>
+          </div>
           
-          <Form onSubmit={handleCreateTrip}>
-            <Form.Group className="mb-3">
-              <Form.Label className="fw-medium text-secondary">Where are you heading?</Form.Label>
-              <Form.Select 
-                value={tripType} 
-                onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setTripType(e.target.value)}
-                className="form-select-lg"
-              >
-                <option value="Going Home">Going Home (Take dirty clothes)</option>
-                <option value="Returning">Returning to PG (Bring clean clothes)</option>
-              </Form.Select>
-            </Form.Group>
+          <form onSubmit={handleCreateTrip}>
+            <label className="tm-label">Where are you heading?</label>
+            <select 
+              value={tripType} 
+              onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setTripType(e.target.value)}
+              className="tm-select"
+            >
+              <option value="Going Home">Going Home (Take dirty clothes)</option>
+              <option value="Returning">Returning to PG (Bring clean clothes)</option>
+            </select>
             
-            <Button 
-              variant="primary" 
+            <button 
               type="submit" 
               disabled={isLoading}
-              className="w-100 py-2 fw-medium"
+              className="tm-btn"
             >
               {isLoading ? 'Creating Trip...' : 'Start Trip & Generate Checklist'}
-            </Button>
-          </Form>
-        </Card.Body>
-      </Card>
+            </button>
+          </form>
+        </div>
 
-      {/* Checklist Section - Shows up after creating a trip */}
-      {checklist.length > 0 && (
-        <Card className="shadow-sm border-0">
-          <Card.Body className="p-4">
-            <h4 className="h5 mb-4 d-flex align-items-center gap-2">
-              <Package size={20} className="text-success" /> 
+        {/* Checklist Section - Shows up after creating a trip */}
+        {checklist.length > 0 && (
+          <div className="tm-card">
+            <div className="tm-card-title">
+              <Package size={20} className="icon-green" />
               Your Packing Checklist
-            </h4>
+            </div>
             
-            <ListGroup variant="flush">
+            <div className="tm-checklist">
               {checklist.map((item) => (
-                <ListGroup.Item 
+                <div 
                   key={item.id} 
-                  className="px-0 py-3 d-flex align-items-center justify-content-between border-bottom"
-                  style={{ cursor: 'pointer' }}
+                  className={`tm-checklist-item ${item.is_completed ? 'completed' : ''}`}
                   onClick={() => toggleItem(item.id)}
                 >
-                  <div className="d-flex align-items-center gap-3">
+                  <div className="tm-item-left">
                     <CheckCircle 
                       size={24} 
-                      className={item.is_completed ? "text-success" : "text-secondary opacity-25"} 
+                      className="tm-check-icon"
                     />
                     <div>
-                      <h6 className={`mb-0 ${item.is_completed ? 'text-decoration-line-through text-secondary' : 'text-dark'}`}>
-                        {item.item_name}
-                      </h6>
-                      <small className="text-muted">{item.category}</small>
+                      <h6 className="tm-item-name">{item.item_name}</h6>
+                      <p className="tm-item-category">{item.category}</p>
                     </div>
                   </div>
-                </ListGroup.Item>
+                </div>
               ))}
-            </ListGroup>
-          </Card.Body>
-        </Card>
-      )}
-    </Container>
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
   );
 };
 

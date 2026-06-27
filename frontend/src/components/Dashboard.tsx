@@ -1,14 +1,14 @@
 import React, { useState, useEffect } from 'react';
-import { Container, Row, Col, Alert, Spinner } from 'react-bootstrap';
+import { Container, Row, Col, Spinner } from 'react-bootstrap';
 import {
   Home, ArrowRightLeft, Shirt, AlertCircle,
-  Calendar, ChevronRight, Plus, X, Check
+  Calendar, ChevronRight, Plus, X, Check, Wifi
 } from 'lucide-react';
 import axios from 'axios';
 // @ts-ignore: Allow side-effect import for CSS without module declarations
-import './Dashboard.css'; // Ensure you have a CSS file for styling
+import './Dashboard.css';
 
-// --- Types & Interfaces ചേർക്കുന്നു ---
+// --- Types & Interfaces ---
 interface Trip {
   id: number;
   type: string;
@@ -22,40 +22,30 @@ interface AddTripModalProps {
   onClose: () => void;
   onAdd: (trip: Trip) => void;
 }
-// ------------------------------------
+// -------------------------
 
 const TRIP_TYPES = [
-  { value: 'going_home', label: 'Going Home', icon: '🏠' },
-  { value: 'returning', label: 'Returning to PG', icon: '🏢' },
-  { value: 'weekend', label: 'Weekend Trip', icon: '🌄' },
-  { value: 'other', label: 'Other', icon: '📍' },
+  { value: 'going_home',  label: 'Going Home',       icon: '🏠' },
+  { value: 'returning',   label: 'Returning to PG',  icon: '🏢' },
+  { value: 'weekend',     label: 'Weekend Trip',     icon: '🌄' },
+  { value: 'other',       label: 'Other',            icon: '📍' },
 ];
 
 const STATUS_OPTIONS = ['Pending', 'Planned', 'Completed', 'Cancelled'];
 
 const AddTripModal: React.FC<AddTripModalProps> = ({ onClose, onAdd }) => {
-  const [form, setForm] = useState({
-    type: 'going_home',
-    date: '',
-    status: 'Pending',
-    note: '',
-  });
+  const [form, setForm] = useState({ type: 'going_home', date: '', status: 'Pending', note: '' });
   const [submitted, setSubmitted] = useState(false);
   const [error, setError] = useState('');
 
-  // field, value എന്നിവയ്ക്ക് ടൈപ്പ് നൽകുന്നു
   const handleChange = (field: string, value: string) => {
     setForm(prev => ({ ...prev, [field]: value }));
     if (error) setError('');
   };
 
   const handleSubmit = () => {
-    if (!form.date) {
-      setError('Please select a date for the trip.');
-      return;
-    }
-    const selectedType = TRIP_TYPES.find(t => t.value === form.type) || TRIP_TYPES[0]; // Fallback ചേർത്തു
-    
+    if (!form.date) { setError('Please select a date for the trip.'); return; }
+    const selectedType = TRIP_TYPES.find(t => t.value === form.type) || TRIP_TYPES[0];
     const newTrip: Trip = {
       id: Date.now(),
       type: selectedType.label,
@@ -64,12 +54,8 @@ const AddTripModal: React.FC<AddTripModalProps> = ({ onClose, onAdd }) => {
       status: form.status,
       note: form.note,
     };
-    
     setSubmitted(true);
-    setTimeout(() => {
-      onAdd(newTrip);
-      onClose();
-    }, 900);
+    setTimeout(() => { onAdd(newTrip); onClose(); }, 900);
   };
 
   return (
@@ -78,22 +64,18 @@ const AddTripModal: React.FC<AddTripModalProps> = ({ onClose, onAdd }) => {
         {/* Header */}
         <div className="modal-header">
           <div className="modal-header-left">
-            <div className="modal-icon-pill">
-              <Calendar size={18} />
-            </div>
+            <div className="modal-icon-pill"><Calendar size={17} /></div>
             <h2 className="modal-title">Add a trip</h2>
           </div>
           <button className="modal-close-btn" onClick={onClose} aria-label="Close">
-            <X size={18} />
+            <X size={17} />
           </button>
         </div>
 
         {submitted ? (
           <div className="modal-success">
-            <div className="success-circle">
-              <Check size={28} color="#fff" />
-            </div>
-            <p className="success-text">Trip added!</p>
+            <div className="success-circle"><Check size={28} color="#fff" /></div>
+            <p className="success-text">Trip added! 🎉</p>
           </div>
         ) : (
           <div className="modal-body">
@@ -125,7 +107,11 @@ const AddTripModal: React.FC<AddTripModalProps> = ({ onClose, onAdd }) => {
                 min={new Date().toISOString().split('T')[0]}
                 onChange={e => handleChange('date', e.target.value)}
               />
-              {error && <p className="form-error">{error}</p>}
+              {error && (
+                <p className="form-error">
+                  <AlertCircle size={12} /> {error}
+                </p>
+              )}
             </div>
 
             {/* Status */}
@@ -146,7 +132,9 @@ const AddTripModal: React.FC<AddTripModalProps> = ({ onClose, onAdd }) => {
 
             {/* Note */}
             <div className="form-group">
-              <label className="form-label" htmlFor="trip-note">Note <span className="optional-tag">optional</span></label>
+              <label className="form-label" htmlFor="trip-note">
+                Note <span className="optional-tag">optional</span>
+              </label>
               <textarea
                 id="trip-note"
                 className="form-input form-textarea"
@@ -161,8 +149,7 @@ const AddTripModal: React.FC<AddTripModalProps> = ({ onClose, onAdd }) => {
             <div className="modal-actions">
               <button className="btn-cancel" onClick={onClose}>Cancel</button>
               <button className="btn-add" onClick={handleSubmit}>
-                <Plus size={16} />
-                Add trip
+                <Plus size={16} /> Add trip
               </button>
             </div>
           </div>
@@ -174,41 +161,40 @@ const AddTripModal: React.FC<AddTripModalProps> = ({ onClose, onAdd }) => {
 
 const TripStatusBadge = ({ status }: { status: string }) => {
   const mapping: Record<string, string> = {
-    Pending: 'badge-amber',
-    Planned: 'badge-indigo',
+    Pending:   'badge-amber',
+    Planned:   'badge-indigo',
     Completed: 'badge-green',
     Cancelled: 'badge-red',
   };
-  const cls = mapping[status] || 'badge-amber';
-  return <span className={`status-badge ${cls}`}>{status}</span>;
+  return <span className={`status-badge ${mapping[status] || 'badge-amber'}`}>{status}</span>;
+};
+
+// Greeting based on time of day
+const getGreeting = () => {
+  const h = new Date().getHours();
+  if (h < 12) return 'Good morning 🌅';
+  if (h < 17) return 'Good afternoon ☀️';
+  return 'Good evening 🌙';
 };
 
 const Dashboard: React.FC = () => {
   const [laundryStats, setLaundryStats] = useState({ clean: 0, dirty: 0 });
-  
-  // Trip array-ക്ക് ടൈപ്പ് നൽകുന്നു
   const [trips, setTrips] = useState<Trip[]>([
-    { id: 1, type: 'Going Home', icon: '🏠', date: '2026-06-20', status: 'Pending', note: '' },
-    { id: 2, type: 'Returning to PG', icon: '🏢', date: '2026-06-22', status: 'Planned', note: '' },
+    { id: 1, type: 'Going Home',      icon: '🏠', date: '2026-06-20', status: 'Pending',   note: '' },
+    { id: 2, type: 'Returning to PG', icon: '🏢', date: '2026-06-22', status: 'Planned',   note: '' },
   ]);
-  
-  const [isLoading, setIsLoading] = useState(true);
-  
-  // Error state-ന് ടൈപ്പ് നൽകുന്നു
-  const [error, setError] = useState<string | null>(null);
-  
-  const [showModal, setShowModal] = useState(false);
+  const [isLoading, setIsLoading]   = useState(true);
+  const [error, setError]           = useState<string | null>(null);
+  const [showModal, setShowModal]   = useState(false);
 
   useEffect(() => {
     const fetchData = async () => {
-      setIsLoading(true);
-      setError(null);
+      setIsLoading(true); setError(null);
       try {
         const res = await axios.get('http://localhost:8000/laundry/stats/1');
         setLaundryStats(res.data);
-      } catch (err) {
-        console.error('Dashboard Fetch Error:', err);
-        setError('Unable to load laundry data. Is the backend running?');
+      } catch {
+        setError('Backend offline — showing demo data.');
       } finally {
         setIsLoading(false);
       }
@@ -216,43 +202,37 @@ const Dashboard: React.FC = () => {
     fetchData();
   }, []);
 
-  const handleAddTrip = (newTrip: Trip) => {
-    setTrips(prev => [...prev, newTrip]);
-  };
+  const handleAddTrip    = (t: Trip)   => setTrips(prev => [...prev, t]);
+  const handleDeleteTrip = (id: number) => setTrips(prev => prev.filter(t => t.id !== id));
 
-  // id-ക്ക് ടൈപ്പ് നൽകുന്നു
-  const handleDeleteTrip = (id: number) => {
-    setTrips(prev => prev.filter(t => t.id !== id));
-  };
-
-  const total = laundryStats.clean + laundryStats.dirty;
-  const cleanPct = total === 0 ? 0 : Math.round((laundryStats.clean / total) * 100);
-  const dirtyPct = total === 0 ? 0 : Math.round((laundryStats.dirty / total) * 100);
+  const total     = laundryStats.clean + laundryStats.dirty;
+  const cleanPct  = total === 0 ? 0 : Math.round((laundryStats.clean / total) * 100);
+  const dirtyPct  = total === 0 ? 0 : Math.round((laundryStats.dirty / total) * 100);
 
   const formatDate = (dateStr: string) => {
     if (!dateStr) return '';
-    const d = new Date(dateStr);
-    return d.toLocaleDateString('en-IN', { weekday: 'short', day: 'numeric', month: 'long', year: 'numeric' });
+    return new Date(dateStr).toLocaleDateString('en-IN', {
+      weekday: 'short', day: 'numeric', month: 'long', year: 'numeric'
+    });
   };
 
   return (
     <>
       {showModal && (
-        <AddTripModal
-          onClose={() => setShowModal(false)}
-          onAdd={handleAddTrip}
-        />
+        <AddTripModal onClose={() => setShowModal(false)} onAdd={handleAddTrip} />
       )}
 
       <Container className="db-page py-0 px-0" fluid>
 
-        {/* Hero Header */}
+        {/* ── Hero ── */}
         <div className="db-hero">
           <div className="db-hero-content">
             <p className="db-greeting">
-              {new Date().toLocaleDateString('en-IN', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}
+              {new Date().toLocaleDateString('en-IN', {
+                weekday: 'long', day: 'numeric', month: 'long', year: 'numeric'
+              })}
             </p>
-            <h1 className="db-title">Good morning 👋</h1>
+            <h1 className="db-title">{getGreeting()}</h1>
             <p className="db-subtitle">Your hostel essentials, at a glance.</p>
           </div>
           <div className="db-hero-bubble db-hero-bubble-1" />
@@ -261,40 +241,43 @@ const Dashboard: React.FC = () => {
 
         <div className="db-body">
 
-          {/* Error */}
+          {/* ── Error ── */}
           {error && (
-            <Alert variant="danger" className="d-flex align-items-center mb-4 db-alert">
-              <AlertCircle size={18} className="me-2 flex-shrink-0" />
+            <div
+              className="db-alert d-flex align-items-center gap-2 mb-4 p-3"
+              style={{ borderRadius: 12, fontSize: 13 }}
+            >
+              <Wifi size={16} style={{ flexShrink: 0 }} />
               {error}
-            </Alert>
+            </div>
           )}
 
-          {/* Top Cards */}
+          {/* ── Top Cards ── */}
           <Row className="g-3 mb-3">
             {/* Going Home */}
             <Col md={4}>
-              <div className="db-card db-action-card h-100">
+              <div className="db-card db-action-card db-action-card-amber h-100">
                 <div className="action-icon action-icon-amber">
                   <Home size={20} />
                 </div>
                 <p className="action-title">Going Home</p>
-                <p className="action-hint">Pack essentials & laundry</p>
+                <p className="action-hint">Pack essentials &amp; laundry</p>
                 <div className="action-footer">
-                  Start packing <ChevronRight size={14} />
+                  Start packing <ChevronRight size={13} />
                 </div>
               </div>
             </Col>
 
             {/* Returning */}
             <Col md={4}>
-              <div className="db-card db-action-card h-100">
+              <div className="db-card db-action-card db-action-card-indigo h-100">
                 <div className="action-icon action-icon-indigo">
                   <ArrowRightLeft size={20} />
                 </div>
                 <p className="action-title">Returning to PG</p>
                 <p className="action-hint">Don't forget clean clothes</p>
                 <div className="action-footer">
-                  Plan return <ChevronRight size={14} />
+                  Plan return <ChevronRight size={13} />
                 </div>
               </div>
             </Col>
@@ -303,9 +286,9 @@ const Dashboard: React.FC = () => {
             <Col md={4}>
               <div className="db-card db-laundry-card h-100">
                 <div className="laundry-head">
-                  <Shirt size={18} className="laundry-head-icon" />
+                  <Shirt size={17} className="laundry-head-icon" />
                   <span className="laundry-head-title">Laundry</span>
-                  {isLoading && <Spinner animation="border" size="sm" className="ms-auto" />}
+                  {isLoading && <Spinner animation="border" size="sm" className="ms-auto" style={{ color: 'var(--db-accent)', width: 14, height: 14, borderWidth: 2 }} />}
                 </div>
 
                 <div className="laundry-row">
@@ -333,17 +316,17 @@ const Dashboard: React.FC = () => {
             </Col>
           </Row>
 
-          {/* Stat Strip */}
+          {/* ── Stat Strip ── */}
           <Row className="g-3 mb-4">
             <Col xs={6}>
-              <div className="db-stat-box">
+              <div className="db-stat-box db-stat-box-green">
                 <p className="stat-label">Clean items</p>
                 <p className="stat-val stat-val-green">{laundryStats.clean}</p>
                 <p className="stat-sub">{cleanPct}% of wardrobe ready</p>
               </div>
             </Col>
             <Col xs={6}>
-              <div className="db-stat-box">
+              <div className="db-stat-box db-stat-box-red">
                 <p className="stat-label">Need washing</p>
                 <p className="stat-val stat-val-red">{laundryStats.dirty}</p>
                 <p className="stat-sub">{dirtyPct}% need washing soon</p>
@@ -351,9 +334,9 @@ const Dashboard: React.FC = () => {
             </Col>
           </Row>
 
-          {/* Upcoming Trips */}
+          {/* ── Upcoming Trips ── */}
           <div className="db-section-title">
-            <Calendar size={14} />
+            <Calendar size={12} />
             Upcoming Trips
           </div>
 
