@@ -1,14 +1,13 @@
 import React, { useState, useEffect } from 'react';
-import { Container, Row, Col, Spinner } from 'react-bootstrap';
 import {
-  Home, ArrowRightLeft, Shirt, AlertCircle,
-  Calendar, ChevronRight, Plus, X, Check, Wifi
+  Shirt, AlertCircle,
+  Calendar, ChevronRight, Plus, X, Check, WifiOff,
+  Sparkles, Trash2
 } from 'lucide-react';
 import axios from 'axios';
-// @ts-ignore: Allow side-effect import for CSS without module declarations
 import './Dashboard.css';
 
-// --- Types & Interfaces ---
+/* ── Types ── */
 interface Trip {
   id: number;
   type: string;
@@ -22,17 +21,47 @@ interface AddTripModalProps {
   onClose: () => void;
   onAdd: (trip: Trip) => void;
 }
-// -------------------------
 
+/* ── Constants ── */
 const TRIP_TYPES = [
-  { value: 'going_home',  label: 'Going Home',       icon: '🏠' },
-  { value: 'returning',   label: 'Returning to PG',  icon: '🏢' },
-  { value: 'weekend',     label: 'Weekend Trip',     icon: '🌄' },
-  { value: 'other',       label: 'Other',            icon: '📍' },
+  { value: 'going_home',  label: 'Going Home',       icon: '🏠', color: 'amber' },
+  { value: 'returning',   label: 'Returning to PG',  icon: '🏢', color: 'indigo' },
+  { value: 'weekend',     label: 'Weekend Trip',     icon: '🌄', color: 'green' },
+  { value: 'other',       label: 'Other',            icon: '📍', color: 'red' },
 ];
 
 const STATUS_OPTIONS = ['Pending', 'Planned', 'Completed', 'Cancelled'];
 
+/* ── Helpers ── */
+const getGreeting = () => {
+  const h = new Date().getHours();
+  if (h < 12) return { text: 'Good morning', emoji: '🌅' };
+  if (h < 17) return { text: 'Good afternoon', emoji: '☀️' };
+  return { text: 'Good evening', emoji: '🌙' };
+};
+
+const formatDate = (dateStr: string) => {
+  if (!dateStr) return '';
+  return new Date(dateStr).toLocaleDateString('en-IN', {
+    weekday: 'short', day: 'numeric', month: 'short', year: 'numeric',
+  });
+};
+
+/* ── Status Badge ── */
+const TripStatusBadge = ({ status }: { status: string }) => {
+  const map: Record<string, { cls: string; dot: string }> = {
+    Pending:   { cls: 'badge-amber',  dot: '🟡' },
+    Planned:   { cls: 'badge-indigo', dot: '🔵' },
+    Completed: { cls: 'badge-green',  dot: '🟢' },
+    Cancelled: { cls: 'badge-red',    dot: '🔴' },
+  };
+  const { cls } = map[status] || map.Pending;
+  return <span className={`status-badge ${cls}`}>{status}</span>;
+};
+
+/* ════════════════════════════════════════
+   ADD TRIP MODAL
+════════════════════════════════════════ */
 const AddTripModal: React.FC<AddTripModalProps> = ({ onClose, onAdd }) => {
   const [form, setForm] = useState({ type: 'going_home', date: '', status: 'Pending', note: '' });
   const [submitted, setSubmitted] = useState(false);
@@ -44,49 +73,60 @@ const AddTripModal: React.FC<AddTripModalProps> = ({ onClose, onAdd }) => {
   };
 
   const handleSubmit = () => {
-    if (!form.date) { setError('Please select a date for the trip.'); return; }
-    const selectedType = TRIP_TYPES.find(t => t.value === form.type) || TRIP_TYPES[0];
+    if (!form.date) { setError('Please pick a travel date.'); return; }
+    const selected = TRIP_TYPES.find(t => t.value === form.type) || TRIP_TYPES[0];
     const newTrip: Trip = {
       id: Date.now(),
-      type: selectedType.label,
-      icon: selectedType.icon,
+      type: selected.label,
+      icon: selected.icon,
       date: form.date,
       status: form.status,
       note: form.note,
     };
     setSubmitted(true);
-    setTimeout(() => { onAdd(newTrip); onClose(); }, 900);
+    setTimeout(() => { onAdd(newTrip); onClose(); }, 1000);
+  };
+
+  /* click-outside to close */
+  const handleOverlayClick = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (e.target === e.currentTarget) onClose();
   };
 
   return (
-    <div className="modal-overlay">
-      <div className="modal-box">
+    <div className="modal-overlay" onClick={handleOverlayClick}>
+      <div className="modal-box" role="dialog" aria-modal="true">
+
         {/* Header */}
         <div className="modal-header">
           <div className="modal-header-left">
-            <div className="modal-icon-pill"><Calendar size={17} /></div>
-            <h2 className="modal-title">Add a trip</h2>
+            <div className="modal-icon-pill"><Calendar size={18} /></div>
+            <h2 className="modal-title">Add a Trip ✈️</h2>
           </div>
           <button className="modal-close-btn" onClick={onClose} aria-label="Close">
-            <X size={17} />
+            <X size={18} />
           </button>
         </div>
 
         {submitted ? (
+          /* ── Success ── */
           <div className="modal-success">
-            <div className="success-circle"><Check size={28} color="#fff" /></div>
-            <p className="success-text">Trip added! 🎉</p>
+            <div className="success-circle">
+              <Check size={32} color="#fff" strokeWidth={3} />
+            </div>
+            <p className="success-title">Trip added! 🎉</p>
+            <p className="success-sub">Your packing list is ready.</p>
           </div>
         ) : (
           <div className="modal-body">
+
             {/* Trip Type */}
             <div className="form-group">
-              <label className="form-label">Trip type</label>
+              <label className="form-label">Where are you going?</label>
               <div className="trip-type-grid">
                 {TRIP_TYPES.map(t => (
                   <button
                     key={t.value}
-                    className={`trip-type-btn ${form.type === t.value ? 'selected' : ''}`}
+                    className={`trip-type-btn trip-type-${t.color} ${form.type === t.value ? 'selected' : ''}`}
                     onClick={() => handleChange('type', t.value)}
                   >
                     <span className="trip-type-emoji">{t.icon}</span>
@@ -98,7 +138,7 @@ const AddTripModal: React.FC<AddTripModalProps> = ({ onClose, onAdd }) => {
 
             {/* Date */}
             <div className="form-group">
-              <label className="form-label" htmlFor="trip-date">Date</label>
+              <label className="form-label" htmlFor="trip-date">📅 Travel Date</label>
               <input
                 id="trip-date"
                 type="date"
@@ -108,9 +148,7 @@ const AddTripModal: React.FC<AddTripModalProps> = ({ onClose, onAdd }) => {
                 onChange={e => handleChange('date', e.target.value)}
               />
               {error && (
-                <p className="form-error">
-                  <AlertCircle size={12} /> {error}
-                </p>
+                <p className="form-error"><AlertCircle size={13} /> {error}</p>
               )}
             </div>
 
@@ -133,7 +171,7 @@ const AddTripModal: React.FC<AddTripModalProps> = ({ onClose, onAdd }) => {
             {/* Note */}
             <div className="form-group">
               <label className="form-label" htmlFor="trip-note">
-                Note <span className="optional-tag">optional</span>
+                📝 Note <span className="optional-tag">optional</span>
               </label>
               <textarea
                 id="trip-note"
@@ -148,8 +186,8 @@ const AddTripModal: React.FC<AddTripModalProps> = ({ onClose, onAdd }) => {
             {/* Actions */}
             <div className="modal-actions">
               <button className="btn-cancel" onClick={onClose}>Cancel</button>
-              <button className="btn-add" onClick={handleSubmit}>
-                <Plus size={16} /> Add trip
+              <button className="btn-add" onClick={handleSubmit} id="confirm-add-trip">
+                <Plus size={18} /> Add Trip
               </button>
             </div>
           </div>
@@ -159,42 +197,27 @@ const AddTripModal: React.FC<AddTripModalProps> = ({ onClose, onAdd }) => {
   );
 };
 
-const TripStatusBadge = ({ status }: { status: string }) => {
-  const mapping: Record<string, string> = {
-    Pending:   'badge-amber',
-    Planned:   'badge-indigo',
-    Completed: 'badge-green',
-    Cancelled: 'badge-red',
-  };
-  return <span className={`status-badge ${mapping[status] || 'badge-amber'}`}>{status}</span>;
-};
-
-// Greeting based on time of day
-const getGreeting = () => {
-  const h = new Date().getHours();
-  if (h < 12) return 'Good morning 🌅';
-  if (h < 17) return 'Good afternoon ☀️';
-  return 'Good evening 🌙';
-};
-
+/* ════════════════════════════════════════
+   DASHBOARD
+════════════════════════════════════════ */
 const Dashboard: React.FC = () => {
   const [laundryStats, setLaundryStats] = useState({ clean: 0, dirty: 0 });
   const [trips, setTrips] = useState<Trip[]>([
     { id: 1, type: 'Going Home',      icon: '🏠', date: '2026-06-20', status: 'Pending',   note: '' },
     { id: 2, type: 'Returning to PG', icon: '🏢', date: '2026-06-22', status: 'Planned',   note: '' },
   ]);
-  const [isLoading, setIsLoading]   = useState(true);
-  const [error, setError]           = useState<string | null>(null);
-  const [showModal, setShowModal]   = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const [apiError, setApiError]   = useState<string | null>(null);
+  const [showModal, setShowModal] = useState(false);
 
   useEffect(() => {
     const fetchData = async () => {
-      setIsLoading(true); setError(null);
+      setIsLoading(true); setApiError(null);
       try {
         const res = await axios.get('http://localhost:8000/laundry/stats/1');
         setLaundryStats(res.data);
       } catch {
-        setError('Backend offline — showing demo data.');
+        setApiError('Backend offline — showing demo data.');
       } finally {
         setIsLoading(false);
       }
@@ -202,182 +225,225 @@ const Dashboard: React.FC = () => {
     fetchData();
   }, []);
 
-  const handleAddTrip    = (t: Trip)   => setTrips(prev => [...prev, t]);
+  const handleAddTrip    = (t: Trip)    => setTrips(prev => [t, ...prev]);
   const handleDeleteTrip = (id: number) => setTrips(prev => prev.filter(t => t.id !== id));
 
-  const total     = laundryStats.clean + laundryStats.dirty;
-  const cleanPct  = total === 0 ? 0 : Math.round((laundryStats.clean / total) * 100);
-  const dirtyPct  = total === 0 ? 0 : Math.round((laundryStats.dirty / total) * 100);
+  const total    = laundryStats.clean + laundryStats.dirty;
+  const cleanPct = total === 0 ? 0 : Math.round((laundryStats.clean / total) * 100);
+  const dirtyPct = total === 0 ? 0 : Math.round((laundryStats.dirty / total) * 100);
 
-  const formatDate = (dateStr: string) => {
-    if (!dateStr) return '';
-    return new Date(dateStr).toLocaleDateString('en-IN', {
-      weekday: 'short', day: 'numeric', month: 'long', year: 'numeric'
-    });
-  };
+  const { text: greeting, emoji: greetEmoji } = getGreeting();
 
   return (
     <>
       {showModal && (
-        <AddTripModal onClose={() => setShowModal(false)} onAdd={handleAddTrip} />
+        <AddTripModal
+          onClose={() => setShowModal(false)}
+          onAdd={handleAddTrip}
+        />
       )}
 
-      <Container className="db-page py-0 px-0" fluid>
+      <div className="db-page">
 
-        {/* ── Hero ── */}
+        {/* ── Ambient background orbs ── */}
+        <div className="db-orb db-orb-1" />
+        <div className="db-orb db-orb-2" />
+
+        {/* ═══════════════ HERO ═══════════════ */}
         <div className="db-hero">
+          <div className="db-hero-dots" />
           <div className="db-hero-content">
-            <p className="db-greeting">
+            <p className="db-date-label">
               {new Date().toLocaleDateString('en-IN', {
-                weekday: 'long', day: 'numeric', month: 'long', year: 'numeric'
+                weekday: 'long', day: 'numeric', month: 'long', year: 'numeric',
               })}
             </p>
-            <h1 className="db-title">{getGreeting()}</h1>
-            <p className="db-subtitle">Your hostel essentials, at a glance.</p>
+            <h1 className="db-greeting">
+              {greeting} {greetEmoji}
+            </h1>
+            <p className="db-subtitle">
+              <Sparkles size={14} className="db-subtitle-icon" />
+              Your hostel essentials, at a glance.
+            </p>
           </div>
           <div className="db-hero-bubble db-hero-bubble-1" />
           <div className="db-hero-bubble db-hero-bubble-2" />
         </div>
 
+        {/* ═══════════════ BODY ═══════════════ */}
         <div className="db-body">
 
-          {/* ── Error ── */}
-          {error && (
-            <div
-              className="db-alert d-flex align-items-center gap-2 mb-4 p-3"
-              style={{ borderRadius: 12, fontSize: 13 }}
-            >
-              <Wifi size={16} style={{ flexShrink: 0 }} />
-              {error}
+          {/* API offline notice */}
+          {apiError && (
+            <div className="db-alert">
+              <WifiOff size={16} />
+              {apiError}
             </div>
           )}
 
-          {/* ── Top Cards ── */}
-          <Row className="g-3 mb-3">
-            {/* Going Home */}
-            <Col md={4}>
-              <div className="db-card db-action-card db-action-card-amber h-100">
-                <div className="action-icon action-icon-amber">
-                  <Home size={20} />
+          {/* ── Quick-Action Cards ── */}
+          <section className="db-section">
+            <h2 className="db-section-title">
+              <span className="db-section-dot" />
+              Quick Actions
+            </h2>
+
+            <div className="db-actions-grid">
+              {/* Going Home */}
+              <div className="db-action-card db-action-amber">
+                <div className="db-action-emoji">🏠</div>
+                <div className="db-action-body">
+                  <p className="db-action-title">Going Home</p>
+                  <p className="db-action-hint">Pack essentials &amp; laundry</p>
                 </div>
-                <p className="action-title">Going Home</p>
-                <p className="action-hint">Pack essentials &amp; laundry</p>
-                <div className="action-footer">
-                  Start packing <ChevronRight size={13} />
+                <div className="db-action-arrow">
+                  <ChevronRight size={18} />
                 </div>
               </div>
-            </Col>
 
-            {/* Returning */}
-            <Col md={4}>
-              <div className="db-card db-action-card db-action-card-indigo h-100">
-                <div className="action-icon action-icon-indigo">
-                  <ArrowRightLeft size={20} />
+              {/* Returning */}
+              <div className="db-action-card db-action-indigo">
+                <div className="db-action-emoji">🏢</div>
+                <div className="db-action-body">
+                  <p className="db-action-title">Returning to PG</p>
+                  <p className="db-action-hint">Don't forget clean clothes</p>
                 </div>
-                <p className="action-title">Returning to PG</p>
-                <p className="action-hint">Don't forget clean clothes</p>
-                <div className="action-footer">
-                  Plan return <ChevronRight size={13} />
+                <div className="db-action-arrow">
+                  <ChevronRight size={18} />
                 </div>
               </div>
-            </Col>
+            </div>
+          </section>
 
-            {/* Laundry */}
-            <Col md={4}>
-              <div className="db-card db-laundry-card h-100">
-                <div className="laundry-head">
-                  <Shirt size={17} className="laundry-head-icon" />
-                  <span className="laundry-head-title">Laundry</span>
-                  {isLoading && <Spinner animation="border" size="sm" className="ms-auto" style={{ color: 'var(--db-accent)', width: 14, height: 14, borderWidth: 2 }} />}
-                </div>
+          {/* ── Laundry Stats ── */}
+          <section className="db-section">
+            <h2 className="db-section-title">
+              <span className="db-section-dot db-section-dot-green" />
+              Laundry Overview
+            </h2>
 
-                <div className="laundry-row">
-                  <div className="laundry-meta">
-                    <span className="laundry-label">Clean</span>
-                    <span className="laundry-val laundry-val-green">{laundryStats.clean} items</span>
+            <div className="db-laundry-card">
+              <div className="db-laundry-icon-wrap">
+                <Shirt size={22} className="db-laundry-icon" />
+                {isLoading && <span className="db-loading-pulse" />}
+              </div>
+
+              <div className="db-laundry-stats">
+                {/* Clean */}
+                <div className="db-laundry-stat">
+                  <div className="db-laundry-stat-top">
+                    <span className="db-laundry-label">✅ Clean</span>
+                    <span className="db-laundry-count db-count-green">
+                      {laundryStats.clean}
+                    </span>
                   </div>
-                  <div className="progress-track">
-                    <div className="progress-fill fill-green" style={{ width: `${cleanPct}%` }} />
+                  <div className="db-progress-track">
+                    <div
+                      className="db-progress-fill db-fill-green"
+                      style={{ width: `${cleanPct}%` }}
+                    />
                   </div>
                 </div>
 
-                <div className="laundry-row" style={{ marginBottom: 0 }}>
-                  <div className="laundry-meta">
-                    <span className="laundry-label">Dirty</span>
-                    <span className="laundry-val laundry-val-red">{laundryStats.dirty} items</span>
+                {/* Dirty */}
+                <div className="db-laundry-stat">
+                  <div className="db-laundry-stat-top">
+                    <span className="db-laundry-label">🧺 Dirty</span>
+                    <span className="db-laundry-count db-count-red">
+                      {laundryStats.dirty}
+                    </span>
                   </div>
-                  <div className="progress-track">
-                    <div className="progress-fill fill-red" style={{ width: `${dirtyPct}%` }} />
+                  <div className="db-progress-track">
+                    <div
+                      className="db-progress-fill db-fill-red"
+                      style={{ width: `${dirtyPct}%` }}
+                    />
                   </div>
                 </div>
+              </div>
 
-                <div className="laundry-total">{total} items tracked total</div>
+              {/* Stat pills */}
+              <div className="db-laundry-pills">
+                <div className="db-stat-pill db-pill-green">
+                  <p className="db-pill-num">{laundryStats.clean}</p>
+                  <p className="db-pill-lbl">Ready</p>
+                </div>
+                <div className="db-stat-pill db-pill-red">
+                  <p className="db-pill-num">{laundryStats.dirty}</p>
+                  <p className="db-pill-lbl">Need wash</p>
+                </div>
+                <div className="db-stat-pill db-pill-neutral">
+                  <p className="db-pill-num">{total}</p>
+                  <p className="db-pill-lbl">Total</p>
+                </div>
               </div>
-            </Col>
-          </Row>
-
-          {/* ── Stat Strip ── */}
-          <Row className="g-3 mb-4">
-            <Col xs={6}>
-              <div className="db-stat-box db-stat-box-green">
-                <p className="stat-label">Clean items</p>
-                <p className="stat-val stat-val-green">{laundryStats.clean}</p>
-                <p className="stat-sub">{cleanPct}% of wardrobe ready</p>
-              </div>
-            </Col>
-            <Col xs={6}>
-              <div className="db-stat-box db-stat-box-red">
-                <p className="stat-label">Need washing</p>
-                <p className="stat-val stat-val-red">{laundryStats.dirty}</p>
-                <p className="stat-sub">{dirtyPct}% need washing soon</p>
-              </div>
-            </Col>
-          </Row>
+            </div>
+          </section>
 
           {/* ── Upcoming Trips ── */}
-          <div className="db-section-title">
-            <Calendar size={12} />
-            Upcoming Trips
-          </div>
+          <section className="db-section">
+            <div className="db-section-header">
+              <h2 className="db-section-title" style={{ margin: 0 }}>
+                <span className="db-section-dot db-section-dot-amber" />
+                Upcoming Trips
+              </h2>
+              <span className="db-trip-count">{trips.length}</span>
+            </div>
 
-          <div className="db-card db-trips-card mb-3">
-            {trips.length === 0 ? (
-              <div className="trips-empty">
-                <Calendar size={32} className="trips-empty-icon" />
-                <p className="trips-empty-msg">No trips planned yet. Add one below!</p>
-              </div>
-            ) : (
-              trips.map((trip, idx) => (
-                <div
-                  key={trip.id}
-                  className={`trip-item ${idx < trips.length - 1 ? 'trip-item-border' : ''}`}
-                >
-                  <div className="trip-emoji">{trip.icon}</div>
-                  <div className="trip-info">
-                    <p className="trip-name">{trip.type}</p>
-                    <p className="trip-date">{formatDate(trip.date)}</p>
-                    {trip.note ? <p className="trip-note">{trip.note}</p> : null}
-                  </div>
-                  <TripStatusBadge status={trip.status} />
-                  <button
-                    className="trip-delete-btn"
-                    onClick={() => handleDeleteTrip(trip.id)}
-                    aria-label="Delete trip"
-                  >
-                    <X size={14} />
-                  </button>
+            <div className="db-trips-card">
+              {trips.length === 0 ? (
+                <div className="db-trips-empty">
+                  <span className="db-trips-empty-icon">🗺️</span>
+                  <p className="db-trips-empty-msg">No trips planned yet.</p>
+                  <p className="db-trips-empty-sub">Tap "Add a trip" to get started!</p>
                 </div>
-              ))
-            )}
-          </div>
+              ) : (
+                <div className="db-trips-list">
+                  {trips.map((trip, idx) => (
+                    <div
+                      key={trip.id}
+                      className="db-trip-item"
+                      style={{ animationDelay: `${idx * 60}ms` }}
+                    >
+                      <div className="db-trip-emoji-wrap">
+                        <span className="db-trip-emoji">{trip.icon}</span>
+                      </div>
+                      <div className="db-trip-info">
+                        <p className="db-trip-name">{trip.type}</p>
+                        <p className="db-trip-date">
+                          <Calendar size={11} style={{ display: 'inline', marginRight: 4 }} />
+                          {formatDate(trip.date)}
+                        </p>
+                        {trip.note && <p className="db-trip-note">{trip.note}</p>}
+                      </div>
+                      <TripStatusBadge status={trip.status} />
+                      <button
+                        className="db-trip-delete"
+                        onClick={() => handleDeleteTrip(trip.id)}
+                        aria-label="Delete trip"
+                        title="Remove trip"
+                      >
+                        <Trash2 size={15} />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
 
-          <button className="btn-add-trip" onClick={() => setShowModal(true)}>
-            <Plus size={16} />
-            Add a trip
-          </button>
+            {/* Add trip button */}
+            <button
+              className="db-add-btn"
+              onClick={() => setShowModal(true)}
+              id="add-trip-btn"
+            >
+              <div className="db-add-btn-icon"><Plus size={20} /></div>
+              <span>Add a trip</span>
+            </button>
+          </section>
 
         </div>
-      </Container>
+      </div>
     </>
   );
 };

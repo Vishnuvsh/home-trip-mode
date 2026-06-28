@@ -1,156 +1,221 @@
-import React, { useState, useEffect } from 'react';
-import { Shirt, Plus, CheckCircle2, XCircle, AlertCircle } from 'lucide-react';
+import React, { useState } from 'react';
+import { Shirt, Plus, CheckCircle2, XCircle, AlertCircle, Sparkles } from 'lucide-react';
 import './LaundryTracker.css';
 
-// 1. തുണികളുടെ ഡാറ്റയ്ക്ക് ഒരു TypeScript Interface ഉണ്ടാക്കുന്നു
 interface ClothingItem {
-    id: number;
-    item_name: string;
-    is_clean: boolean;
+  id: number;
+  item_name: string;
+  is_clean: boolean;
 }
 
 const LaundryTracker = () => {
-    // 2. സ്റ്റേറ്റുകളിൽ Type കൊടുക്കുന്നു
-    const [clothes, setClothes] = useState<ClothingItem[]>([]);
-    const [newItemName, setNewItemName] = useState<string>('');
-    const [error, setError] = useState<string | null>(null);
+  const [clothes, setClothes] = useState<ClothingItem[]>([
+    { id: 1, item_name: 'Black Hoodie', is_clean: false },
+    { id: 2, item_name: 'Blue Jeans',   is_clean: true  },
+    { id: 3, item_name: 'White T-Shirt',is_clean: false },
+  ]);
+  const [newItemName, setNewItemName] = useState<string>('');
+  const [error] = useState<string | null>(null);
+  const [recentId, setRecentId] = useState<number | null>(null);
 
-    // Initial load - Mocking data for now
-    useEffect(() => {
-        setClothes([
-            { id: 1, item_name: 'Black Hoodie', is_clean: false },
-            { id: 2, item_name: 'Blue Jeans', is_clean: true },
-            { id: 3, item_name: 'White T-Shirt', is_clean: false }
-        ]);
-    }, []);
+  const handleAddItem = (e: React.FormEvent) => {
+    e.preventDefault();
+    const name = newItemName.trim();
+    if (!name) return;
 
-    // 3. ഇവന്റിന് (e) React.FormEvent എന്ന് Type കൊടുക്കുന്നു
-    const handleAddItem = (e: React.FormEvent) => {
-        e.preventDefault();
-        if (!newItemName.trim()) return;
+    const newItem: ClothingItem = { id: Date.now(), item_name: name, is_clean: true };
+    setClothes(prev => [newItem, ...prev]);
+    setRecentId(newItem.id);
+    setNewItemName('');
+    setTimeout(() => setRecentId(null), 600);
+  };
 
-        // പുതിയ ഐറ്റത്തിന് ClothingItem സ്ട്രക്ചർ കൊടുക്കുന്നു
-        const newItem: ClothingItem = {
-            id: Date.now(),
-            item_name: newItemName,
-            is_clean: true
-        };
-
-        setClothes([newItem, ...clothes]);
-        setNewItemName('');
-    };
-
-    // 4. പാരാമീറ്ററിന് (id) number എന്ന് Type കൊടുക്കുന്നു
-    const toggleStatus = (id: number) => {
-        setClothes(clothes.map(cloth =>
-            cloth.id === id ? { ...cloth, is_clean: !cloth.is_clean } : cloth
-        ));
-    };
-
-    const cleanClothes = clothes.filter(c => c.is_clean);
-    const dirtyClothes = clothes.filter(c => !c.is_clean);
-
-    return (
-        <div className="lt-page">
-            <div className="lt-container">
-                <div className="lt-header">
-                    <h1 className="lt-title">Laundry Tracker</h1>
-                    <p className="lt-subtitle">Keep track of your clean and dirty clothes.</p>
-                </div>
-
-                {error && (
-                    <div className="lt-alert lt-alert-danger">
-                        <AlertCircle size={18} />
-                        {error}
-                    </div>
-                )}
-
-                <div className="lt-grid">
-                    {/* Add New Item Form */}
-                    <div className="lt-full-width">
-                        <div className="lt-card">
-                            <form onSubmit={handleAddItem} className="lt-form">
-                                <input
-                                    type="text"
-                                    placeholder="Enter clothing item (e.g., Red Shirt, Jeans)"
-                                    value={newItemName}
-                                    onChange={(e) => setNewItemName(e.target.value)}
-                                    className="lt-input"
-                                />
-                                <button type="submit" className="lt-btn">
-                                    <Plus size={20} /> Add Item
-                                </button>
-                            </form>
-                        </div>
-                    </div>
-
-                    {/* Dirty Clothes Column */}
-                    <div className="lt-card" style={{ borderTop: '3px solid rgba(244, 63, 94, 0.5)' }}>
-                        <div className="lt-card-title">
-                            <div className="lt-card-title-left">
-                                <XCircle size={20} className="icon-danger" />
-                                Dirty Clothes
-                            </div>
-                            <span className="lt-badge lt-badge-danger">{dirtyClothes.length}</span>
-                        </div>
-
-                        {dirtyClothes.length === 0 ? (
-                            <div className="lt-list-empty">No dirty clothes! 🎉</div>
-                        ) : (
-                            <div className="lt-list">
-                                {dirtyClothes.map(cloth => (
-                                    <div key={cloth.id} className="lt-list-item">
-                                        <div className="lt-item-left">
-                                            <Shirt size={20} className="icon-gray" />
-                                            <span>{cloth.item_name}</span>
-                                        </div>
-                                        <button
-                                            className="lt-action-btn success"
-                                            onClick={() => toggleStatus(cloth.id)}
-                                        >
-                                            Mark Clean
-                                        </button>
-                                    </div>
-                                ))}
-                            </div>
-                        )}
-                    </div>
-
-                    {/* Clean Clothes Column */}
-                    <div className="lt-card" style={{ borderTop: '3px solid rgba(16, 208, 122, 0.5)' }}>
-                        <div className="lt-card-title">
-                            <div className="lt-card-title-left">
-                                <CheckCircle2 size={20} className="icon-success" />
-                                Clean Clothes
-                            </div>
-                            <span className="lt-badge lt-badge-success">{cleanClothes.length}</span>
-                        </div>
-
-                        {cleanClothes.length === 0 ? (
-                            <div className="lt-list-empty">Time to do some laundry! 🧺</div>
-                        ) : (
-                            <div className="lt-list">
-                                {cleanClothes.map(cloth => (
-                                    <div key={cloth.id} className="lt-list-item">
-                                        <div className="lt-item-left">
-                                            <Shirt size={20} className="icon-gray" />
-                                            <span>{cloth.item_name}</span>
-                                        </div>
-                                        <button
-                                            className="lt-action-btn danger"
-                                            onClick={() => toggleStatus(cloth.id)}
-                                        >
-                                            Wear It
-                                        </button>
-                                    </div>
-                                ))}
-                            </div>
-                        )}
-                    </div>
-                </div>
-            </div>
-        </div>
+  const toggleStatus = (id: number) => {
+    setClothes(prev =>
+      prev.map(c => c.id === id ? { ...c, is_clean: !c.is_clean } : c)
     );
+  };
+
+  const removeItem = (id: number) => {
+    setClothes(prev => prev.filter(c => c.id !== id));
+  };
+
+  const cleanClothes = clothes.filter(c => c.is_clean);
+  const dirtyClothes = clothes.filter(c => !c.is_clean);
+  const total = clothes.length;
+  const cleanPct = total === 0 ? 0 : Math.round((cleanClothes.length / total) * 100);
+
+  return (
+    <div className="lt-page">
+      <div className="lt-orb lt-orb-1" />
+      <div className="lt-orb lt-orb-2" />
+
+      <div className="lt-container">
+
+        {/* Header */}
+        <div className="lt-header">
+          <div className="lt-header-icon">
+            <Shirt size={22} />
+            <Sparkles size={12} className="lt-header-sparkle" />
+          </div>
+          <div>
+            <h1 className="lt-title">Laundry Tracker</h1>
+            <p className="lt-subtitle">Know exactly what to pack — clean or dirty.</p>
+          </div>
+        </div>
+
+        {error && (
+          <div className="lt-alert lt-alert-danger">
+            <AlertCircle size={18} /> {error}
+          </div>
+        )}
+
+        {/* Summary bar */}
+        <div className="lt-summary-card">
+          <div className="lt-summary-text">
+            <span className="lt-summary-label">Wardrobe health</span>
+            <span className="lt-summary-pct">{cleanPct}% clean</span>
+          </div>
+          <div className="lt-summary-track">
+            <div className="lt-summary-fill" style={{ width: `${cleanPct}%` }} />
+          </div>
+          <div className="lt-summary-counts">
+            <span className="lt-count-pill lt-count-green">
+              <CheckCircle2 size={13} /> {cleanClothes.length} clean
+            </span>
+            <span className="lt-count-pill lt-count-red">
+              <XCircle size={13} /> {dirtyClothes.length} dirty
+            </span>
+          </div>
+        </div>
+
+        {/* Add item form */}
+        <div className="lt-add-card">
+          <form onSubmit={handleAddItem} className="lt-form">
+            <div className="lt-input-wrap">
+              <Shirt size={16} className="lt-input-icon" />
+              <input
+                type="text"
+                placeholder="Add a clothing item…"
+                value={newItemName}
+                onChange={e => setNewItemName(e.target.value)}
+                className="lt-input"
+                id="clothing-item-input"
+              />
+            </div>
+            <button type="submit" className="lt-btn" id="add-clothing-btn">
+              <Plus size={18} /> Add
+            </button>
+          </form>
+        </div>
+
+        {/* Two-column clothes grid */}
+        <div className="lt-grid">
+
+          {/* Dirty Column */}
+          <div className="lt-card lt-card-dirty">
+            <div className="lt-card-header">
+              <div className="lt-card-header-left">
+                <XCircle size={18} className="lt-icon-red" />
+                <h2 className="lt-card-title">Dirty</h2>
+              </div>
+              <span className={`lt-badge lt-badge-red ${recentId !== null ? 'badge-bounce' : ''}`}>
+                {dirtyClothes.length}
+              </span>
+            </div>
+
+            {dirtyClothes.length === 0 ? (
+              <div className="lt-empty">
+                <span className="lt-empty-icon">🎉</span>
+                <p>All clean!</p>
+              </div>
+            ) : (
+              <div className="lt-list">
+                {dirtyClothes.map((cloth, idx) => (
+                  <div
+                    key={cloth.id}
+                    className="lt-item lt-item-enter"
+                    style={{ animationDelay: `${idx * 50}ms` }}
+                  >
+                    <div className="lt-item-left">
+                      <div className="lt-item-dot lt-dot-red" />
+                      <span className="lt-item-name">{cloth.item_name}</span>
+                    </div>
+                    <div className="lt-item-actions">
+                      <button
+                        className="lt-action-btn lt-action-clean"
+                        onClick={() => toggleStatus(cloth.id)}
+                        title="Mark as clean"
+                      >
+                        <CheckCircle2 size={14} /> Clean
+                      </button>
+                      <button
+                        className="lt-delete-btn"
+                        onClick={() => removeItem(cloth.id)}
+                        aria-label="Remove"
+                      >
+                        ×
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* Clean Column */}
+          <div className="lt-card lt-card-clean">
+            <div className="lt-card-header">
+              <div className="lt-card-header-left">
+                <CheckCircle2 size={18} className="lt-icon-green" />
+                <h2 className="lt-card-title">Clean</h2>
+              </div>
+              <span className="lt-badge lt-badge-green">{cleanClothes.length}</span>
+            </div>
+
+            {cleanClothes.length === 0 ? (
+              <div className="lt-empty">
+                <span className="lt-empty-icon">🧺</span>
+                <p>Time to do laundry!</p>
+              </div>
+            ) : (
+              <div className="lt-list">
+                {cleanClothes.map((cloth, idx) => (
+                  <div
+                    key={cloth.id}
+                    className="lt-item lt-item-enter"
+                    style={{ animationDelay: `${idx * 50}ms` }}
+                  >
+                    <div className="lt-item-left">
+                      <div className="lt-item-dot lt-dot-green" />
+                      <span className="lt-item-name">{cloth.item_name}</span>
+                    </div>
+                    <div className="lt-item-actions">
+                      <button
+                        className="lt-action-btn lt-action-wear"
+                        onClick={() => toggleStatus(cloth.id)}
+                        title="Mark as dirty"
+                      >
+                        <Shirt size={14} /> Worn
+                      </button>
+                      <button
+                        className="lt-delete-btn"
+                        onClick={() => removeItem(cloth.id)}
+                        aria-label="Remove"
+                      >
+                        ×
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
+        </div>
+      </div>
+    </div>
+  );
 };
 
 export default LaundryTracker;

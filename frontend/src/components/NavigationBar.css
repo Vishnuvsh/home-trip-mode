@@ -1,52 +1,73 @@
-/* ===== Navbar ===== */
+/* ═══════════════════════════════════════════════════
+   NavigationBar — Theme-aware, glassmorphism sticky nav
+═══════════════════════════════════════════════════ */
+
 .navbar {
   position: sticky;
   top: 0;
-  z-index: 100;
+  z-index: 200;
   width: 100%;
-  background: #000000;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-  box-sizing: border-box;
+  background: var(--nav-bg);
+  border-bottom: 1px solid var(--nav-border);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  transition: background 0.3s ease, border-color 0.3s ease;
 }
 
 .navbar-inner {
-  max-width: 1200px;
+  max-width: 100%;
   margin: 0 auto;
-  padding: 0 24px;
-  height: 60px;
+  padding: 0 32px;
+  height: 62px;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 24px;
+  gap: 16px;
 }
 
-/* Brand */
+/* ── Brand ── */
 .navbar-brand {
   display: flex;
   align-items: center;
   gap: 10px;
   text-decoration: none;
-  color: #f3f4f6;
-  font-weight: 600;
+  color: var(--text);
+  font-weight: 700;
   font-size: 16px;
-  letter-spacing: -0.2px;
-  transition: opacity 0.2s;
-}
-
-.navbar-brand svg {
-  color: #c084fc;
+  letter-spacing: -0.3px;
+  transition: var(--transition-fast);
   flex-shrink: 0;
 }
 
-.navbar-brand:hover {
-  opacity: 0.8;
+.navbar-brand-icon {
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+  background: var(--accent-light);
+  color: var(--accent);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: var(--transition-fast);
+  border: 1px solid rgba(108, 95, 255, 0.2);
 }
 
-/* Nav links */
+.navbar-brand:hover .navbar-brand-icon {
+  background: var(--accent);
+  color: #fff;
+  transform: rotate(-8deg) scale(1.08);
+}
+
+.navbar-brand:hover {
+  color: var(--text);
+  opacity: 0.9;
+}
+
+/* ── Nav Links ── */
 .navbar-links {
   display: flex;
   align-items: center;
-  gap: 4px;
+  gap: 2px;
 }
 
 .navbar-link {
@@ -54,45 +75,88 @@
   align-items: center;
   gap: 7px;
   padding: 7px 14px;
-  border-radius: 8px;
+  border-radius: var(--radius-xs);
   text-decoration: none;
-  color: #9ca3af;
+  color: var(--nav-text);
   font-size: 14px;
-  font-weight: 500;
-  transition: color 0.2s, background 0.2s;
+  font-weight: 600;
+  transition: var(--transition-fast);
+  white-space: nowrap;
 }
 
 .navbar-link svg {
   flex-shrink: 0;
-  opacity: 0.8;
+  transition: var(--transition-fast);
 }
 
 .navbar-link:hover {
-  color: #f3f4f6;
-  background: rgba(255, 255, 255, 0.06);
+  color: var(--nav-text-hover);
+  background: var(--surface-hover);
 }
 
 .navbar-link.active {
-  color: #c084fc;
-  background: rgba(192, 132, 252, 0.12);
+  color: var(--nav-active);
+  background: var(--nav-active-bg);
 }
 
 .navbar-link.active svg {
-  opacity: 1;
-  color: #c084fc;
+  color: var(--nav-active);
 }
 
-/* Responsive */
+/* ── Theme Toggle ── */
+.theme-toggle {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: 1.5px solid var(--border-hover);
+  background: var(--surface);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: var(--transition);
+  color: var(--text-muted);
+  flex-shrink: 0;
+}
+
+.theme-toggle:hover {
+  background: var(--accent-light);
+  border-color: var(--accent);
+  color: var(--accent);
+  transform: scale(1.1);
+}
+
+.theme-toggle-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s;
+}
+
+.icon-sun  { animation: spin-in 0.4s cubic-bezier(0.4,0,0.2,1); }
+.icon-moon { animation: spin-in 0.4s cubic-bezier(0.4,0,0.2,1); }
+
+@keyframes spin-in {
+  from { transform: rotate(-90deg) scale(0.6); opacity: 0; }
+  to   { transform: rotate(0deg)   scale(1);   opacity: 1; }
+}
+
+/* ── Responsive ── */
 @media (max-width: 640px) {
   .navbar-inner {
     padding: 0 16px;
+    gap: 8px;
   }
 
   .navbar-brand span {
     display: none;
   }
 
+  .navbar-link span {
+    display: none;
+  }
+
   .navbar-link {
-    padding: 7px 10px;
+    padding: 8px;
   }
 }
