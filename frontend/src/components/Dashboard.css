@@ -20,7 +20,8 @@
   filter: blur(80px);
   pointer-events: none;
   z-index: 0;
-  animation: orb-float 10s ease-in-out infinite;
+  animation: orb-float 12s ease-in-out infinite;
+  will-change: transform;
 }
 .db-orb-1 {
   width: 400px; height: 400px;
@@ -31,7 +32,8 @@
   width: 300px; height: 300px;
   background: radial-gradient(circle, var(--hero-orb2) 0%, transparent 70%);
   bottom: 10%; left: -60px;
-  animation-delay: -5s;
+  animation-delay: -6s;
+  animation-duration: 14s;
 }
 
 /* ── Hero ───────────────────────────────────────────────────── */
@@ -57,7 +59,7 @@
   z-index: 2;
   max-width: 100%;
   margin: 0 auto;
-  animation: fade-up 0.5s ease both;
+  animation: slide-up-fade 0.7s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
 .db-date-label {
@@ -135,12 +137,12 @@
 /* ── Section ─────────────────────────────────────────────────── */
 .db-section {
   margin-bottom: 32px;
-  animation: fade-up 0.5s ease both;
+  animation: slide-up-fade 0.6s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
-.db-section:nth-child(2) { animation-delay: 0.06s; }
-.db-section:nth-child(3) { animation-delay: 0.12s; }
-.db-section:nth-child(4) { animation-delay: 0.18s; }
+.db-section:nth-child(2) { animation-delay: 0.1s; }
+.db-section:nth-child(3) { animation-delay: 0.2s; }
+.db-section:nth-child(4) { animation-delay: 0.3s; }
 
 .db-section-title {
   font-size: 11px;
@@ -238,12 +240,12 @@
 }
 
 .db-action-card:hover {
-  transform: translateY(-5px);
+  transform: translateY(-6px) scale(1.02);
   box-shadow: var(--shadow-lg);
 }
 
 .db-action-card:hover::after { opacity: 1; }
-.db-action-card:active { transform: scale(0.98); }
+.db-action-card:active { transform: scale(0.97) translateY(-2px); transition: var(--transition-fast); }
 
 /* Amber variant */
 .db-action-amber {
@@ -284,7 +286,8 @@
 }
 
 .db-action-card:hover .db-action-emoji {
-  transform: scale(1.1) rotate(-6deg);
+  transform: scale(1.15) rotate(-8deg);
+  transition: var(--transition-spring);
 }
 
 .db-action-body { flex: 1; min-width: 0; }
@@ -335,6 +338,7 @@
 .db-laundry-card:hover {
   border-color: var(--green);
   box-shadow: 0 12px 36px var(--green-glow);
+  transform: translateY(-3px);
 }
 
 .db-laundry-icon-wrap {
@@ -399,11 +403,15 @@
 .db-fill-green {
   background: linear-gradient(90deg, var(--green), #34d399);
   box-shadow: 0 0 10px var(--green-glow);
+  background-size: 200% 100%;
+  animation: gradient-shift 3s ease infinite;
 }
 
 .db-fill-red {
   background: linear-gradient(90deg, var(--red), #fb7185);
   box-shadow: 0 0 10px var(--red-glow);
+  background-size: 200% 100%;
+  animation: gradient-shift 3s ease infinite;
 }
 
 .db-laundry-pills {
@@ -496,8 +504,8 @@
   gap: 14px;
   padding: 16px 20px;
   border-bottom: 1px solid var(--border);
-  transition: background 0.2s;
-  animation: fade-up 0.35s ease both;
+  transition: background 0.2s, transform 0.25s cubic-bezier(0.22, 1, 0.36, 1);
+  animation: slide-up-fade 0.45s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
 .db-trip-item:last-child { border-bottom: none; }
@@ -521,7 +529,8 @@
 }
 
 .db-trip-item:hover .db-trip-emoji-wrap {
-  transform: scale(1.08) rotate(-5deg);
+  transform: scale(1.12) rotate(-6deg);
+  transition: var(--transition-spring);
 }
 
 .db-trip-info { flex: 1; min-width: 0; }
@@ -628,7 +637,8 @@
 .db-add-btn:hover .db-add-btn-icon {
   background: var(--accent);
   color: #fff;
-  transform: scale(1.1) rotate(90deg);
+  transform: scale(1.15) rotate(90deg);
+  transition: var(--transition-spring);
 }
 
 .db-add-btn:active { transform: scale(0.99); }
@@ -658,7 +668,7 @@
   max-width: 440px;
   overflow: hidden;
   box-shadow: var(--shadow-lg);
-  animation: scale-in 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  animation: scale-in 0.35s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 .modal-header {
@@ -934,7 +944,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  animation: pop 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  animation: bounce-in 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
   box-shadow: 0 0 40px var(--green-glow);
   margin-bottom: 4px;
 }

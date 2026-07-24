@@ -47,7 +47,7 @@ const TripManager: React.FC = () => {
     setSuccess(false);
 
     try {
-      await axios.post('http://localhost:8000/trips/?user_id=1', { trip_type: tripType });
+      await axios.post('http://localhost:8001/trips/?user_id=1', { trip_type: tripType });
 
       setChecklist([
         { id: 1, category: 'Electronics',       item_name: 'Phone Charger', is_completed: false },

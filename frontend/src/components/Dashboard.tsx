@@ -214,7 +214,7 @@ const Dashboard: React.FC = () => {
     const fetchData = async () => {
       setIsLoading(true); setApiError(null);
       try {
-        const res = await axios.get('http://localhost:8000/laundry/stats/1');
+        const res = await axios.get('http://localhost:8001/laundry/stats/1');
         setLaundryStats(res.data);
       } catch {
         setApiError('Backend offline — showing demo data.');
