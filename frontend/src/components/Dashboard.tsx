@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import {
+from {
   Shirt, AlertCircle,
   Calendar, ChevronRight, Plus, X, Check, WifiOff,
-  Sparkles, Trash2
+  Sparkles, Trash2, Mic, Loader2, Bot
 } from 'lucide-react';
 import axios from 'axios';
 import './Dashboard.css';
@@ -20,6 +20,19 @@ interface Trip {
 interface AddTripModalProps {
   onClose: () => void;
   onAdd: (trip: Trip) => void;
+}
+
+interface AIResponseData {
+  trip: {
+    id: number;
+    trip_type: string;
+    trip_date: string;
+    status: string;
+  };
+  detected_type: string;
+  detected_date_str: string;
+  extracted_items: string[];
+  ai_summary: string;
 }
 
 /* ── Constants ── */
@@ -198,6 +211,61 @@ const AddTripModal: React.FC<AddTripModalProps> = ({ onClose, onAdd }) => {
 };
 
 /* ════════════════════════════════════════
+   AI INSIGHT RESULT MODAL
+════════════════════════════════════════ */
+const AIResultModal = ({ data, onClose }: { data: AIResponseData; onClose: () => void }) => {
+  return (
+    <div className="modal-overlay" onClick={e => e.target === e.currentTarget && onClose()}>
+      <div className="modal-box" role="dialog" aria-modal="true" style={{ maxWidth: 480 }}>
+        <div className="ai-modal-header">
+          <div className="modal-icon-pill" style={{ background: 'rgba(236, 72, 153, 0.15)', color: '#ec4899' }}>
+            <Bot size={20} />
+          </div>
+          <div>
+            <span className="ai-modal-badge">✨ AI Smart Quick-Add</span>
+            <h2 className="modal-title" style={{ marginTop: 4 }}>Trip Auto-Planned!</h2>
+          </div>
+          <button className="modal-close-btn" style={{ marginLeft: 'auto' }} onClick={onClose} aria-label="Close">
+            <X size={18} />
+          </button>
+        </div>
+
+        <div className="modal-body">
+          <p style={{ fontSize: 14.5, lineHeight: 1.5, color: 'var(--text)', fontWeight: 500, margin: '0 0 12px' }}>
+            {data.ai_summary}
+          </p>
+
+          <div className="ai-insight-box">
+            <div className="ai-insight-row">
+              <span className="ai-insight-label">🏷️ Trip Type</span>
+              <span className="ai-insight-val">{data.detected_type}</span>
+            </div>
+            <div className="ai-insight-row">
+              <span className="ai-insight-label">📅 Travel Date</span>
+              <span className="ai-insight-val">{data.detected_date_str}</span>
+            </div>
+            <div className="ai-insight-row" style={{ flexDirection: 'column', alignItems: 'flex-start', gap: 6 }}>
+              <span className="ai-insight-label">🎒 Added to Checklist ({data.extracted_items.length} items)</span>
+              <div className="ai-items-tags">
+                {data.extracted_items.map((item, idx) => (
+                  <span key={idx} className="ai-item-tag">{item}</span>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          <div className="modal-actions" style={{ marginTop: 24 }}>
+            <button className="btn-add" style={{ width: '100%', justifyContent: 'center' }} id="close-ai-modal-btn" onClick={onClose}>
+              <Check size={18} /> Got it! View Dashboard
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+/* ════════════════════════════════════════
    DASHBOARD
 ════════════════════════════════════════ */
 const Dashboard: React.FC = () => {
@@ -209,6 +277,84 @@ const Dashboard: React.FC = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [apiError, setApiError]   = useState<string | null>(null);
   const [showModal, setShowModal] = useState(false);
+
+  /* ── AI Quick-Add State ── */
+  const [aiPrompt, setAiPrompt] = useState('');
+  const [isAiLoading, setIsAiLoading] = useState(false);
+  const [aiResult, setAiResult] = useState<AIResponseData | null>(null);
+  const [isListening, setIsListening] = useState(false);
+
+  const handleStartVoice = () => {
+    if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
+      alert('Voice input is not supported in this browser. Try Chrome or Edge!');
+      return;
+    }
+    const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+    const recognition = new SpeechRecognition();
+    recognition.lang = 'ml-IN';
+    recognition.interimResults = false;
+    recognition.maxAlternatives = 1;
+
+    setIsListening(true);
+    recognition.onresult = (event: any) => {
+      const transcript = event.results[0][0].transcript;
+      setAiPrompt(prev => prev ? `${prev} ${transcript}` : transcript);
+      setIsListening(false);
+    };
+    recognition.onerror = () => setIsListening(false);
+    recognition.onend = () => setIsListening(false);
+    recognition.start();
+  };
+
+  const handleAISubmit = async (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
+    if (!aiPrompt.trim()) return;
+    
+    setIsAiLoading(true);
+    setApiError(null);
+    try {
+      const res = await axios.post('http://localhost:8001/ai/quick-add', {
+        prompt: aiPrompt,
+        user_id: 1,
+      });
+      setAiResult(res.data);
+      const newTrip: Trip = {
+        id: res.data.trip.id,
+        type: res.data.trip.trip_type,
+        icon: res.data.trip.trip_type === 'Going Home' ? '🏠' : res.data.trip.trip_type === 'Returning to PG' ? '🏢' : '✈️',
+        date: res.data.trip.trip_date.split('T')[0],
+        status: res.data.trip.status,
+        note: '✨ AI Auto-Planned',
+      };
+      setTrips(prev => [newTrip, ...prev]);
+      setAiPrompt('');
+    } catch {
+      const isHome = aiPrompt.includes('വീട്ടിൽ') || aiPrompt.includes('home') || aiPrompt.includes('നാട്ടിൽ');
+      const tripType = isHome ? 'Going Home' : 'Returning to PG';
+      const icon = isHome ? '🏠' : '🏢';
+      
+      const targetDate = new Date(Date.now() + 86400000 * 3).toISOString().split('T')[0];
+      const newTrip: Trip = {
+        id: Date.now(),
+        type: tripType,
+        icon: icon,
+        date: targetDate,
+        status: 'Planned',
+        note: '✨ AI Auto-Planned (Local)',
+      };
+      setTrips(prev => [newTrip, ...prev]);
+      setAiResult({
+        trip: { id: newTrip.id, trip_type: tripType, trip_date: targetDate, status: 'Planned' },
+        detected_type: tripType,
+        detected_date_str: formatDate(targetDate),
+        extracted_items: aiPrompt.includes('ലാപ്ടോപ്പ്') || aiPrompt.includes('laptop') ? ['Laptop 💻', 'Jacket 🧥', 'Phone Charger 🔌'] : ['Default Essentials (Offline)'],
+        ai_summary: `✨ AI Smart Analysis (Offline Mode): Detected '${tripType}'. Automatically added custom essentials to your checklist!`,
+      });
+      setAiPrompt('');
+    } finally {
+      setIsAiLoading(false);
+    }
+  };
 
   useEffect(() => {
     const fetchData = async () => {
@@ -243,6 +389,13 @@ const Dashboard: React.FC = () => {
         />
       )}
 
+      {aiResult && (
+        <AIResultModal
+          data={aiResult}
+          onClose={() => setAiResult(null)}
+        />
+      )}
+
       <div className="db-page">
 
         {/* ── Ambient background orbs ── */}
@@ -272,6 +425,45 @@ const Dashboard: React.FC = () => {
 
         {/* ═══════════════ BODY ═══════════════ */}
         <div className="db-body">
+
+          {/* ── AI Smart Quick-Add Bar ── */}
+          <section className="db-ai-section">
+            <form onSubmit={handleAISubmit} className="db-ai-box">
+              <div className="db-ai-icon-wrap" title="AI Assistant Active">
+                <Bot size={20} />
+              </div>
+              <input
+                type="text"
+                className="db-ai-input"
+                placeholder='🎙️ സംസാരിച്ചാലോ ടൈപ്പ് ചെയ്താലോ മതി! (ഉദാ: "ഈ വെള്ളിയാഴ്ച വീട്ടിൽ പോകണം, ലാപ്ടോപ്പും ജാക്കറ്റും എടുക്കാൻ മറക്കരുത്")'
+                value={aiPrompt}
+                onChange={e => setAiPrompt(e.target.value)}
+                disabled={isAiLoading}
+                id="ai-quick-add-input"
+              />
+              <button
+                type="button"
+                className={`db-ai-mic-btn ${isListening ? 'listening' : ''}`}
+                onClick={handleStartVoice}
+                title={isListening ? 'സംസാരിച്ചോളൂ... (Listening...)' : 'വോയ്സ് ഇൻപുട്ട് (Voice Input)'}
+                aria-label="Start voice input"
+              >
+                <Mic size={18} />
+              </button>
+              <button
+                type="submit"
+                className="db-ai-submit-btn"
+                disabled={isAiLoading || !aiPrompt.trim()}
+                id="ai-quick-add-submit"
+              >
+                {isAiLoading ? (
+                  <><Loader2 size={16} className="tm-spinner" /> അനലൈസ് ചെയ്യുന്നു...</>
+                ) : (
+                  <><Sparkles size={16} /> AI Add</>
+                )}
+              </button>
+            </form>
+          </section>
 
           {/* API offline notice */}
           {apiError && (

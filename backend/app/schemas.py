@@ -1,6 +1,6 @@
 from pydantic import BaseModel  # type: ignore
 from datetime import datetime
-from typing import Optional
+from typing import Optional, List
 
 # --- Trip Schemas ---
 
@@ -28,6 +28,24 @@ class ChecklistItemBase(BaseModel):
     item_name: str
     is_completed: bool = False
 
+class ChecklistItemResponse(ChecklistItemBase):
+    id: int
+    trip_id: int
+    model_config = {"from_attributes": True}
+
 class ClothingItemBase(BaseModel):
     item_name: str
     is_clean: bool = True
+
+# --- AI Smart Quick-Add Schemas ---
+
+class AIQuickAddRequest(BaseModel):
+    prompt: str
+    user_id: int = 1
+
+class AIQuickAddResponse(BaseModel):
+    trip: TripResponse
+    detected_type: str
+    detected_date_str: str
+    extracted_items: List[str]
+    ai_summary: str
