@@ -3,6 +3,15 @@ from sqlalchemy.orm import Session
 from fastapi.middleware.cors import CORSMiddleware
 from datetime import datetime, timedelta
 import re
+import os
+import json
+import google.generativeai as genai
+from dotenv import load_dotenv
+
+load_dotenv()
+GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY")
+if GEMINI_API_KEY and GEMINI_API_KEY != "put_your_api_key_here":
+    genai.configure(api_key=GEMINI_API_KEY)
 
 # ഇംപോർട്ടുകളിൽ നിന്ന് 'backend.' ഒഴിവാക്കി 'app.' എന്ന് നൽകി
 from app import models, schemas
@@ -69,105 +78,64 @@ def get_laundry_stats(user_id: int, db: Session = Depends(get_db)):
     dirty_count = db.query(models.ClothingItem).filter_by(user_id=user_id, is_clean=False).count()
     return {"clean": clean_count, "dirty": dirty_count}
 
+@app.get("/trips/{trip_id}/checklist", response_model=list[schemas.ChecklistItemResponse])
+def get_trip_checklist(trip_id: int, db: Session = Depends(get_db)):
+    items = db.query(models.ChecklistItem).filter(models.ChecklistItem.trip_id == trip_id).all()
+    return items
+
 # ═══════════════════════════════════════════════════════════════
 # ⚡ AI Smart Quick-Add Engine (Natural Language Input)
 # ═══════════════════════════════════════════════════════════════
 
-def parse_natural_language_trip(prompt: str):
-    text = prompt.lower()
-    
-    # 1. Determine Trip Type
-    going_home_words = ["വീട്ടിൽ", "വീട്", "നാട്ടിൽ", "നാട്", "home", "veettil", "veedu", "nattil", "naattil", "house", "going home", "nattilekku"]
-    returning_words = ["pg", "hostel", "returning", "തിരികെ", "ഹോസ്റ്റൽ", "room", "college", "campus", "back", "return", "thirike"]
-    
-    trip_type = "Going Home"
-    if any(w in text for w in returning_words):
-        trip_type = "Returning to PG"
-    elif any(w in text for w in going_home_words):
-        trip_type = "Going Home"
-    elif "weekend" in text or "യാത്ര" in text or "trip" in text or "tour" in text:
-        trip_type = "Weekend Trip"
+def parse_trip_with_gemini(prompt: str):
+    if not GEMINI_API_KEY or GEMINI_API_KEY == "put_your_api_key_here":
+        raise HTTPException(status_code=500, detail="Gemini API Key is missing. Please configure it in .env file.")
         
-    # 2. Determine Travel Date
-    today = datetime.utcnow()
-    target_date = today
-    
-    weekday_map = {
-        0: ["തിങ്കൾ", "തിങ്കളാഴ്ച", "monday", "mon", "thinkal"],
-        1: ["ചൊവ്വ", "ചൊവ്വാഴ്ച", "tuesday", "tue", "chovva"],
-        2: ["ബുധൻ", "ബുധനാഴ്ച", "wednesday", "wed", "budhan"],
-        3: ["വ്യാഴം", "വ്യാഴാഴ്ച", "thursday", "thu", "vyazham"],
-        4: ["വെള്ളി", "വെള്ളിയാഴ്ച", "friday", "fri", "velli", "velliyazhcha"],
-        5: ["ശനി", "ശനിയാഴ്ച", "saturday", "sat", "shani", "shaniyazhcha"],
-        6: ["ഞായർ", "ഞായറാഴ്ച", "sunday", "sun", "njayar", "njayarazhcha"]
-    }
-    
-    date_found = False
-    if any(w in text for w in ["നാളെ", "tomorrow", "tmrw", "naale", "nale"]):
-        target_date = today + timedelta(days=1)
-        date_found = True
-    elif any(w in text for w in ["മറ്റന്നാൾ", "day after tomorrow", "mattannal"]):
-        target_date = today + timedelta(days=2)
-        date_found = True
-    elif any(w in text for w in ["ഇന്ന്", "today", "innu"]):
-        target_date = today
-        date_found = True
-    else:
-        for w_day, keywords in weekday_map.items():
-            if any(k in text for k in keywords):
-                current_w_day = today.weekday()
-                days_ahead = w_day - current_w_day
-                if days_ahead < 0 or (days_ahead == 0 and "next" in text):
-                    days_ahead += 7
-                target_date = today + timedelta(days=days_ahead)
-                date_found = True
-                break
-                
-    if not date_found:
-        # Default to upcoming Friday if Going Home, or tomorrow if Returning
-        if trip_type == "Going Home":
-            days_ahead = 4 - today.weekday()
-            if days_ahead < 0:
-                days_ahead += 7
-            target_date = today + timedelta(days=days_ahead)
-        else:
-            target_date = today + timedelta(days=1)
-            
-    # 3. Extract Custom Packing Items
-    item_keywords = [
-        (["ലാപ്ടോപ്പ്", "laptop", "lap", "macbook"], ("Electronics", "Laptop 💻")),
-        (["ജാക്കറ്റ്", "jacket", "coat", "hoodie", "സ്വെറ്റർ", "sweater", "തണുപ്പ്"], ("Clothes (Laundry)", "Jacket 🧥")),
-        (["ചാർജർ", "charger", "cable", "വയർ", "adapter"], ("Electronics", "Phone Charger 🔌")),
-        (["ഹെഡ്‌ഫോൺ", "headphones", "earphones", "airpods", "ഇയർഫോൺ", "headset"], ("Electronics", "Headphones 🎧")),
-        (["ഷൂ", "shoes", "sneakers", "ചെരുപ്പ്", "sandals", "boot"], ("Essentials", "Shoes 👟")),
-        (["പുസ്തകം", "book", "books", "നോട്ടുബുക്ക്", "notes", "study", "പഠിക്കാൻ"], ("Essentials", "Study Notes 📚")),
-        (["ഐഡി", "id", "card", "wallet", "പഴ്സ്", "അറ്റൻഡൻസ്"], ("Essentials", "Wallet / ID Card 🪪")),
-        (["കണ്ണട", "glasses", "spectacles"], ("Essentials", "Glasses 👓")),
-        (["വാട്ടർ ബോട്ടിൽ", "bottle", "water bottle", "കുപ്പി"], ("Essentials", "Water Bottle 💧")),
-        (["ജീൻസ്", "jeans", "പാന്റ്സ്", "pants", "ട്രൗസർ"], ("Clothes (Laundry)", "Jeans 👖")),
-        (["ഷർട്ട്", "shirt", "tshirt", "ടീഷർട്ട്", "തുണി", "clothes", " dress"], ("Clothes (Laundry)", "Clean Clothes 👕")),
-        (["ടൂത്ത്ബ്രഷ്", "toothbrush", "paste", "ബ്രഷ്"], ("Essentials", "Toothbrush 🪥")),
-        (["മെഡിസിൻ", "medicine", "pills", "മരുന്ന്", "ഗുളിക"], ("Essentials", "Medicines 💊")),
-        (["കുട", "umbrella", "മഴ"], ("Essentials", "Umbrella ☂️")),
-        (["കീ", "key", "keys", "താക്കോൽ"], ("Essentials", "Room Keys 🔑")),
-    ]
-    
-    extracted = []
-    for keywords, (cat, name) in item_keywords:
-        if any(k in text for k in keywords):
-            extracted.append((cat, name))
-            
-    # Ensure we at least have Laptop & Jacket if user typed the exact demo phrase and somehow missed
-    if "ലാപ്ടോപ്പ്" in prompt and not any(name == "Laptop 💻" for _, name in extracted):
-        extracted.append(("Electronics", "Laptop 💻"))
-    if "ജാക്കറ്റ്" in prompt and not any(name == "Jacket 🧥" for _, name in extracted):
-        extracted.append(("Clothes (Laundry)", "Jacket 🧥"))
+    try:
+        model = genai.GenerativeModel('gemini-1.5-flash', generation_config={"response_mime_type": "application/json"})
+        today = datetime.utcnow().strftime("%Y-%m-%d")
         
-    return trip_type, target_date, extracted
+        sys_prompt = f"""You are an AI Smart Packing Assistant. Today's date is {today}.
+User request (in Malayalam/Manglish/English): "{prompt}"
+
+Determine:
+1. trip_type: "Going Home", "Returning to PG", or "Weekend Trip"
+2. target_date: The date they plan to travel in YYYY-MM-DD format based on context (e.g. tomorrow, friday). If unclear, use today.
+3. extracted_items: A list of specific items to pack based on their request. Use emojis in the item_name! Categories can be "Clothes (Laundry)", "Electronics", "Essentials", "Misc".
+   For example, if they mention rain, add an Umbrella. If they mention N days, add "Clothes for N days". If they mention train/snacks, add snacks.
+
+Return ONLY valid JSON strictly in this exact structure:
+{{
+  "trip_type": "string",
+  "target_date": "YYYY-MM-DD",
+  "extracted_items": [
+     {{"category": "string", "item_name": "string"}}
+  ]
+}}
+"""
+        response = model.generate_content(sys_prompt)
+        data = json.loads(response.text)
+        
+        trip_type = data.get("trip_type", "Going Home")
+        
+        try:
+            target_date = datetime.strptime(data.get("target_date", today), "%Y-%m-%d")
+        except:
+            target_date = datetime.utcnow()
+            
+        extracted_items = []
+        for item in data.get("extracted_items", []):
+            extracted_items.append((item.get("category", "Misc"), item.get("item_name", "Item")))
+            
+        return trip_type, target_date, extracted_items
+        
+    except Exception as e:
+        print(f"Gemini error: {e}")
+        raise HTTPException(status_code=500, detail="Gemini AI failed to process the request.")
 
 @app.post("/ai/quick-add", response_model=schemas.AIQuickAddResponse)
 def ai_quick_add(request: schemas.AIQuickAddRequest, db: Session = Depends(get_db)):
-    trip_type, target_date, extracted_items = parse_natural_language_trip(request.prompt)
+    trip_type, target_date, extracted_items = parse_trip_with_gemini(request.prompt)
     
     # 1. Create the Trip
     db_trip = models.Trip(
@@ -225,10 +193,14 @@ def ai_quick_add(request: schemas.AIQuickAddRequest, db: Session = Depends(get_d
         
     summary_msg = f"✨ AI Smart Analysis: Detected '{trip_type}' for {date_str}. Automatically added {len(extracted_items)} custom items ({', '.join(extracted_names)}) along with your hostel essentials!"
     
+    # fetch checklist items for this trip
+    created_items = db.query(models.ChecklistItem).filter(models.ChecklistItem.trip_id == db_trip.id).all()
+    
     return schemas.AIQuickAddResponse(
         trip=db_trip,
         detected_type=trip_type,
         detected_date_str=date_str,
         extracted_items=extracted_names,
-        ai_summary=summary_msg
+        ai_summary=summary_msg,
+        checklist=created_items
     )

@@ -48,4 +48,5 @@ class AIQuickAddResponse(BaseModel):
     detected_type: str
     detected_date_str: str
     extracted_items: List[str]
-    ai_summary: str
+    ai_summary: str
+    checklist: List[ChecklistItemResponse] = []
