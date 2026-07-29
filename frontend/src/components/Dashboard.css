@@ -974,42 +974,24 @@
 }
 
 .db-ai-box {
-  background: var(--card-bg);
-  border: 2px solid transparent;
-  background-clip: padding-box;
+  background: var(--surface);
+  border: 1.5px solid var(--border);
   border-radius: 20px;
   padding: 8px 10px 8px 18px;
   display: flex;
   align-items: center;
   gap: 12px;
-  box-shadow: 0 12px 36px var(--card-shadow), 0 0 0 1px var(--border);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
   position: relative;
-  overflow: hidden;
-  transition: all 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+  transition: all 0.3s cubic-bezier(0.25, 1, 0.5, 1);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
 }
 
-.db-ai-box::before {
-  content: '';
-  position: absolute;
-  inset: -2px;
-  z-index: -1;
-  background: linear-gradient(90deg, #f59e0b, #ec4899, #6366f1, #10b981, #f59e0b);
-  background-size: 300% 300%;
-  border-radius: 22px;
-  animation: ai-gradient-spin 6s linear infinite;
-  opacity: 0.75;
-  transition: opacity 0.3s ease;
-}
-
-.db-ai-box:focus-within::before, .db-ai-box:hover::before {
-  opacity: 1;
-  filter: blur(2px);
-}
-
-@keyframes ai-gradient-spin {
-  0% { background-position: 0% 50%; }
-  50% { background-position: 100% 50%; }
-  100% { background-position: 0% 50%; }
+.db-ai-box:focus-within {
+  border-color: rgba(99, 102, 241, 0.5);
+  box-shadow: 0 8px 25px rgba(99, 102, 241, 0.12), 0 0 0 4px rgba(99, 102, 241, 0.08);
+  transform: translateY(-1px);
 }
 
 .db-ai-icon-wrap {
@@ -1019,10 +1001,10 @@
   width: 36px;
   height: 36px;
   border-radius: 12px;
-  background: linear-gradient(135deg, rgba(245, 158, 11, 0.15), rgba(236, 72, 153, 0.15));
-  color: #ec4899;
+  background: linear-gradient(135deg, rgba(99, 102, 241, 0.1), rgba(168, 85, 247, 0.1));
+  color: #6366f1;
   flex-shrink: 0;
-  animation: ai-pulse 2s infinite ease-in-out;
+  transition: transform 0.3s ease;
 }
 
 @keyframes ai-pulse {

@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { CheckCircle2, Package, AlertCircle, Check, Loader2, Sparkles } from 'lucide-react';
 import axios from 'axios';
 import './TripManager.css';
@@ -8,6 +9,15 @@ interface ChecklistItem {
   category: string;
   item_name: string;
   is_completed: boolean;
+}
+
+interface AIResponseData {
+  detected_type: string;
+  detected_date_str: string;
+  extracted_items: string[];
+  ai_summary: string;
+  checklist: ChecklistItem[];
+  created_at?: string;
 }
 
 const TRIP_OPTIONS = [
@@ -35,16 +45,38 @@ const CATEGORY_COLORS: Record<string, string> = {
 
 const TripManager: React.FC = () => {
   const [tripType, setTripType] = useState<string>('Going Home');
+  const [prompt, setPrompt] = useState<string>('');
   const [checklist, setChecklist] = useState<ChecklistItem[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<boolean>(false);
+  const [aiResult, setAiResult] = useState<AIResponseData | null>(null);
+  const [searchParams] = useSearchParams();
+  const tripIdStr = searchParams.get('trip_id');
+
+  useEffect(() => {
+    if (tripIdStr) {
+      const fetchChecklist = async () => {
+        setIsLoading(true);
+        try {
+          const response = await axios.get(`http://localhost:8001/trips/${tripIdStr}/checklist`);
+          setChecklist(response.data);
+        } catch (err) {
+          setError('Could not load the selected trip.');
+        } finally {
+          setIsLoading(false);
+        }
+      };
+      fetchChecklist();
+    }
+  }, [tripIdStr]);
 
   const handleCreateTrip = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setIsLoading(true);
     setError(null);
     setSuccess(false);
+    setAiResult(null);
 
     try {
       await axios.post('http://localhost:8001/trips/?user_id=1', { trip_type: tripType });
@@ -60,6 +92,41 @@ const TripManager: React.FC = () => {
       setSuccess(true);
     } catch {
       setError('Could not reach the backend. Make sure the server is running.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleAIAssistant = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    if (!prompt.trim()) return;
+
+    setIsLoading(true);
+    setError(null);
+    setSuccess(false);
+    setAiResult(null);
+
+    try {
+      const response = await axios.post('http://localhost:8001/ai/quick-add', { 
+        prompt: prompt,
+        user_id: 1 
+      });
+
+      const now = new Date().toLocaleString('en-IN', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit', hour12: true });
+      
+      setAiResult({
+        ...response.data,
+        created_at: now
+      });
+
+      // The backend now returns checklist directly!
+      if (response.data.checklist) {
+        setChecklist(response.data.checklist);
+      }
+      
+      setSuccess(true);
+    } catch (err: any) {
+      setError('Could not reach the AI Engine. Make sure backend is running.');
     } finally {
       setIsLoading(false);
     }
@@ -97,12 +164,67 @@ const TripManager: React.FC = () => {
             {error}
           </div>
         )}
-        {success && (
+        {success && !aiResult && (
           <div className="tm-alert tm-alert-success">
             <Check size={18} />
             Trip created! Your personalised checklist is below.
           </div>
         )}
+        {aiResult && (
+          <div className="tm-alert tm-alert-success" style={{ background: 'rgba(16, 185, 129, 0.15)', borderColor: '#10b981', color: '#10b981', display: 'flex', flexDirection: 'column', gap: '12px' }}>
+            <div style={{ display: 'flex', alignItems: 'flex-start', gap: '8px' }}>
+              <Sparkles size={18} style={{ marginTop: '2px', flexShrink: 0 }} />
+              <span>{aiResult.ai_summary}</span>
+            </div>
+            
+            <div style={{ padding: '12px', background: 'var(--bg)', borderRadius: '8px', border: '1px solid rgba(16, 185, 129, 0.3)', display: 'flex', gap: '16px', flexWrap: 'wrap' }}>
+               <div style={{ flex: 1, minWidth: '150px' }}>
+                 <p style={{ margin: 0, fontSize: '0.8rem', color: 'var(--text-dim)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>📅 Travel Date & Day</p>
+                 <p style={{ margin: '4px 0 0', fontWeight: 600, fontSize: '1rem', color: 'var(--text)' }}>
+                    {aiResult.detected_date_str}
+                 </p>
+               </div>
+               
+               <div style={{ flex: 1, minWidth: '150px' }}>
+                 <p style={{ margin: 0, fontSize: '0.8rem', color: 'var(--text-dim)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>🕒 Created On</p>
+                 <p style={{ margin: '4px 0 0', fontWeight: 600, fontSize: '1rem', color: 'var(--text)' }}>
+                    {aiResult.created_at}
+                 </p>
+               </div>
+            </div>
+          </div>
+        )}
+
+        {/* AI Smart Assistant Card */}
+        <div className="tm-card tm-ai-card">
+          <div className="tm-card-eyebrow" style={{ color: '#8b5cf6' }}>✨ AI Smart Packing Assistant (ഏറ്റവും മികച്ചത്! ⭐)</div>
+          <h2 className="tm-card-title">Describe your trip details</h2>
+          <p style={{ color: 'var(--text-dim)', fontSize: '0.9rem', marginBottom: '1rem' }}>
+            e.g. 4 ദിവസത്തേക്ക് വീട്ടിലേക്ക് പോകുന്നു, മഴക്കാലം
+          </p>
+
+          <form onSubmit={handleAIAssistant}>
+            <textarea
+              className="tm-ai-input"
+              placeholder="Enter your trip plans here..."
+              value={prompt}
+              onChange={e => setPrompt(e.target.value)}
+              rows={3}
+            />
+            <button
+              type="submit"
+              disabled={isLoading || !prompt.trim()}
+              className="tm-btn tm-btn-ai"
+              style={{ background: 'linear-gradient(135deg, #8b5cf6 0%, #6366f1 100%)', width: '100%' }}
+            >
+              {isLoading ? (
+                <><Loader2 size={18} className="tm-spinner" /> Generating Custom Checklist…</>
+              ) : (
+                <><Sparkles size={18} /> AI Suggest Essentials ✨</>
+              )}
+            </button>
+          </form>
+        </div>
 
         {/* Trip Selection Card */}
         <div className="tm-card">

@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
-from {
+import {
   Shirt, AlertCircle,
   Calendar, ChevronRight, Plus, X, Check, WifiOff,
   Sparkles, Trash2, Mic, Loader2, Bot
 } from 'lucide-react';
 import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
 import './Dashboard.css';
 
 /* ── Types ── */
@@ -269,6 +270,7 @@ const AIResultModal = ({ data, onClose }: { data: AIResponseData; onClose: () =>
    DASHBOARD
 ════════════════════════════════════════ */
 const Dashboard: React.FC = () => {
+  const navigate = useNavigate();
   const [laundryStats, setLaundryStats] = useState({ clean: 0, dirty: 0 });
   const [trips, setTrips] = useState<Trip[]>([
     { id: 1, type: 'Going Home',      icon: '🏠', date: '2026-06-20', status: 'Pending',   note: '' },
@@ -328,29 +330,8 @@ const Dashboard: React.FC = () => {
       };
       setTrips(prev => [newTrip, ...prev]);
       setAiPrompt('');
-    } catch {
-      const isHome = aiPrompt.includes('വീട്ടിൽ') || aiPrompt.includes('home') || aiPrompt.includes('നാട്ടിൽ');
-      const tripType = isHome ? 'Going Home' : 'Returning to PG';
-      const icon = isHome ? '🏠' : '🏢';
-      
-      const targetDate = new Date(Date.now() + 86400000 * 3).toISOString().split('T')[0];
-      const newTrip: Trip = {
-        id: Date.now(),
-        type: tripType,
-        icon: icon,
-        date: targetDate,
-        status: 'Planned',
-        note: '✨ AI Auto-Planned (Local)',
-      };
-      setTrips(prev => [newTrip, ...prev]);
-      setAiResult({
-        trip: { id: newTrip.id, trip_type: tripType, trip_date: targetDate, status: 'Planned' },
-        detected_type: tripType,
-        detected_date_str: formatDate(targetDate),
-        extracted_items: aiPrompt.includes('ലാപ്ടോപ്പ്') || aiPrompt.includes('laptop') ? ['Laptop 💻', 'Jacket 🧥', 'Phone Charger 🔌'] : ['Default Essentials (Offline)'],
-        ai_summary: `✨ AI Smart Analysis (Offline Mode): Detected '${tripType}'. Automatically added custom essentials to your checklist!`,
-      });
-      setAiPrompt('');
+    } catch (err: any) {
+      alert(`AI Error: ${err.response?.data?.detail || err.message || "Failed to connect to backend. Is Uvicorn running?"}`);
     } finally {
       setIsAiLoading(false);
     }
@@ -595,7 +576,8 @@ const Dashboard: React.FC = () => {
                     <div
                       key={trip.id}
                       className="db-trip-item"
-                      style={{ animationDelay: `${idx * 60}ms` }}
+                      style={{ animationDelay: `${idx * 60}ms`, cursor: 'pointer' }}
+                      onClick={() => navigate(`/trip-manager?trip_id=${trip.id}`)}
                     >
                       <div className="db-trip-emoji-wrap">
                         <span className="db-trip-emoji">{trip.icon}</span>
@@ -611,7 +593,7 @@ const Dashboard: React.FC = () => {
                       <TripStatusBadge status={trip.status} />
                       <button
                         className="db-trip-delete"
-                        onClick={() => handleDeleteTrip(trip.id)}
+                        onClick={(e) => { e.stopPropagation(); handleDeleteTrip(trip.id); }}
                         aria-label="Delete trip"
                         title="Remove trip"
                       >

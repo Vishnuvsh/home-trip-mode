@@ -1,6 +1,28 @@
-from pydantic import BaseModel  # type: ignore
+from pydantic import BaseModel
 from datetime import datetime
 from typing import Optional, List
+
+# --- Auth / User Schemas ---
+
+class UserBase(BaseModel):
+    username: str
+
+class UserCreate(UserBase):
+    password: str
+
+class UserLogin(UserBase):
+    password: str
+
+class UserResponse(UserBase):
+    id: int
+    model_config = {"from_attributes": True}
+
+class Token(BaseModel):
+    access_token: str
+    token_type: str
+
+class TokenData(BaseModel):
+    username: Optional[str] = None
 
 # --- Trip Schemas ---
 
