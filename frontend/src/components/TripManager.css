@@ -226,7 +226,7 @@
 /* ── Submit Button ── */
 .tm-btn {
   width: 100%;
-  background: linear-gradient(135deg, var(--accent), #5b4dff);
+  background: var(--accent);
   color: #fff;
   border: none;
   padding: 16px;
@@ -290,7 +290,7 @@
 .tm-progress-fill {
   height: 100%;
   border-radius: 99px;
-  background: linear-gradient(90deg, var(--accent), var(--green));
+  background: var(--accent);
   transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
   box-shadow: 0 0 10px var(--accent-glow);
 }
@@ -397,9 +397,8 @@
 .tm-ai-card {
   position: relative;
   overflow: hidden;
-  border: 2px solid transparent;
-  background: linear-gradient(var(--surface), var(--surface)) padding-box, 
-              linear-gradient(135deg, #a855f7, #6366f1) border-box;
+  border: 1.5px solid var(--border);
+  background: var(--surface);
   margin-bottom: 24px;
 }
 

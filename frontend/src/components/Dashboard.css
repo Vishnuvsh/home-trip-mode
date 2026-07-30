@@ -401,17 +401,11 @@
 }
 
 .db-fill-green {
-  background: linear-gradient(90deg, var(--green), #34d399);
-  box-shadow: 0 0 10px var(--green-glow);
-  background-size: 200% 100%;
-  animation: gradient-shift 3s ease infinite;
+  background: var(--green);
 }
 
 .db-fill-red {
-  background: linear-gradient(90deg, var(--red), #fb7185);
-  box-shadow: 0 0 10px var(--red-glow);
-  background-size: 200% 100%;
-  animation: gradient-shift 3s ease infinite;
+  background: var(--red);
 }
 
 .db-laundry-pills {
@@ -906,7 +900,7 @@
   padding: 13px 0;
   border-radius: var(--radius-xs);
   border: none;
-  background: linear-gradient(135deg, var(--accent), #5b4dff);
+  background: var(--accent);
   font-size: 14px;
   font-weight: 700;
   color: #ffffff;
@@ -940,7 +934,7 @@
 .success-circle {
   width: 76px; height: 76px;
   border-radius: 50%;
-  background: linear-gradient(135deg, var(--green), #059669);
+  background: var(--green);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1001,7 +995,7 @@
   width: 36px;
   height: 36px;
   border-radius: 12px;
-  background: linear-gradient(135deg, rgba(99, 102, 241, 0.1), rgba(168, 85, 247, 0.1));
+  background: var(--accent-light);
   color: #6366f1;
   flex-shrink: 0;
   transition: transform 0.3s ease;
@@ -1065,7 +1059,7 @@
 }
 
 .db-ai-submit-btn {
-  background: linear-gradient(135deg, #6366f1, #ec4899);
+  background: var(--accent);
   color: #fff;
   border: none;
   padding: 10px 18px;
@@ -1107,7 +1101,7 @@
 }
 
 .ai-modal-badge {
-  background: linear-gradient(135deg, rgba(245, 158, 11, 0.2), rgba(236, 72, 153, 0.2));
+  background: var(--accent-light);
   color: #ec4899;
   padding: 4px 12px;
   border-radius: 20px;

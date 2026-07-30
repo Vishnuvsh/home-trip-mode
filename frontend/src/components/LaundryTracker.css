@@ -156,8 +156,8 @@
 .lt-summary-fill {
   height: 100%;
   border-radius: 99px;
-  background: linear-gradient(90deg, var(--green), #34d399);
-  box-shadow: 0 0 12px var(--green-glow);
+  background: var(--green);
+  box-shadow: none;
   transition: width 1.2s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
@@ -236,7 +236,7 @@
 }
 
 .lt-btn {
-  background: linear-gradient(135deg, var(--accent), #5b4dff);
+  background: var(--accent);
   color: #fff;
   border: none;
   padding: 13px 20px;

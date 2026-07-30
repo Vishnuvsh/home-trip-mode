@@ -9,55 +9,55 @@
 /* ── LIGHT THEME (default :root) ─────────────────────────────── */
 :root {
   /* Backgrounds */
-  --bg: #f4f3ff;
+  --bg: #f8fafc;
   --bg-secondary: #ffffff;
-  --surface: rgba(255, 255, 255, 0.85);
-  --surface-hover: rgba(255, 255, 255, 0.95);
+  --surface: rgba(255, 255, 255, 0.95);
+  --surface-hover: rgba(255, 255, 255, 1);
 
   /* Borders */
-  --border: rgba(0, 0, 0, 0.08);
-  --border-hover: rgba(0, 0, 0, 0.18);
-  --border-strong: rgba(0, 0, 0, 0.14);
+  --border: rgba(15, 23, 42, 0.08);
+  --border-hover: rgba(15, 23, 42, 0.15);
+  --border-strong: rgba(15, 23, 42, 0.2);
 
   /* Text */
-  --text: #0f0e1a;
-  --text-muted: #6b6880;
-  --text-dim: #a09cb5;
+  --text: #0f172a;
+  --text-muted: #475569;
+  --text-dim: #94a3b8;
 
   /* Brand accent */
-  --accent: #6c5fff;
-  --accent-light: rgba(108, 95, 255, 0.12);
-  --accent-glow: rgba(108, 95, 255, 0.3);
+  --accent: #3b82f6;
+  --accent-light: rgba(59, 130, 246, 0.1);
+  --accent-glow: transparent;
 
   /* Semantic colours */
   --amber: #f59e0b;
-  --amber-light: rgba(245, 158, 11, 0.12);
-  --amber-glow: rgba(245, 158, 11, 0.3);
+  --amber-light: rgba(245, 158, 11, 0.1);
+  --amber-glow: transparent;
 
   --green: #059669;
-  --green-light: rgba(5, 150, 105, 0.12);
-  --green-glow: rgba(5, 150, 105, 0.3);
+  --green-light: rgba(5, 150, 105, 0.1);
+  --green-glow: transparent;
 
   --red: #e11d48;
-  --red-light: rgba(225, 29, 72, 0.12);
-  --red-glow: rgba(225, 29, 72, 0.3);
+  --red-light: rgba(225, 29, 72, 0.1);
+  --red-glow: transparent;
 
-  --indigo: #818cf8;
-  --indigo-light: rgba(129, 140, 248, 0.12);
+  --indigo: #6366f1;
+  --indigo-light: rgba(99, 102, 241, 0.1);
 
   /* Hero gradient */
-  --hero-bg: linear-gradient(135deg, #f0eeff 0%, #ebe8ff 50%, #f8f6ff 100%);
-  --hero-orb1: rgba(108, 95, 255, 0.18);
-  --hero-orb2: rgba(245, 158, 11, 0.12);
-  --hero-dots: rgba(0, 0, 0, 0.05);
+  --hero-bg: transparent;
+  --hero-orb1: transparent;
+  --hero-orb2: transparent;
+  --hero-dots: transparent;
 
   /* Navigation */
-  --nav-bg: rgba(255, 255, 255, 0.85);
-  --nav-border: rgba(0, 0, 0, 0.08);
-  --nav-text: #6b6880;
-  --nav-text-hover: #0f0e1a;
-  --nav-active: #6c5fff;
-  --nav-active-bg: rgba(108, 95, 255, 0.1);
+  --nav-bg: rgba(255, 255, 255, 0.95);
+  --nav-border: rgba(15, 23, 42, 0.08);
+  --nav-text: #64748b;
+  --nav-text-hover: #0f172a;
+  --nav-active: #3b82f6;
+  --nav-active-bg: rgba(59, 130, 246, 0.1);
 
   /* Modal */
   --modal-bg: #ffffff;
@@ -87,49 +87,49 @@
 
 /* ── DARK THEME ───────────────────────────────────────────────── */
 [data-theme='dark'] {
-  --bg: #0a0d14;
-  --bg-secondary: #111422;
-  --surface: rgba(255, 255, 255, 0.04);
-  --surface-hover: rgba(255, 255, 255, 0.08);
+  --bg: #0f172a;
+  --bg-secondary: #1e293b;
+  --surface: rgba(255, 255, 255, 0.03);
+  --surface-hover: rgba(255, 255, 255, 0.05);
 
   --border: rgba(255, 255, 255, 0.08);
-  --border-hover: rgba(255, 255, 255, 0.18);
-  --border-strong: rgba(255, 255, 255, 0.14);
+  --border-hover: rgba(255, 255, 255, 0.15);
+  --border-strong: rgba(255, 255, 255, 0.2);
 
-  --text: #f3f0ff;
-  --text-muted: rgba(255, 255, 255, 0.5);
-  --text-dim: rgba(255, 255, 255, 0.25);
+  --text: #f8fafc;
+  --text-muted: #94a3b8;
+  --text-dim: #64748b;
 
-  --accent: #7c6fff;
-  --accent-light: rgba(124, 111, 255, 0.15);
-  --accent-glow: rgba(124, 111, 255, 0.35);
+  --accent: #3b82f6;
+  --accent-light: rgba(59, 130, 246, 0.15);
+  --accent-glow: transparent;
 
   --amber: #f59e0b;
   --amber-light: rgba(245, 158, 11, 0.15);
-  --amber-glow: rgba(245, 158, 11, 0.3);
+  --amber-glow: transparent;
 
   --green: #10d07a;
   --green-light: rgba(16, 208, 122, 0.15);
-  --green-glow: rgba(16, 208, 122, 0.3);
+  --green-glow: transparent;
 
   --red: #f43f5e;
   --red-light: rgba(244, 63, 94, 0.15);
-  --red-glow: rgba(244, 63, 94, 0.3);
+  --red-glow: transparent;
 
   --indigo: #818cf8;
   --indigo-light: rgba(129, 140, 248, 0.15);
 
-  --hero-bg: linear-gradient(135deg, #0e1220 0%, #131726 60%, #0d1018 100%);
-  --hero-orb1: rgba(124, 111, 255, 0.22);
-  --hero-orb2: rgba(245, 158, 11, 0.18);
-  --hero-dots: rgba(255, 255, 255, 0.04);
+  --hero-bg: transparent;
+  --hero-orb1: transparent;
+  --hero-orb2: transparent;
+  --hero-dots: transparent;
 
-  --nav-bg: rgba(10, 13, 20, 0.85);
+  --nav-bg: rgba(15, 23, 42, 0.95);
   --nav-border: rgba(255, 255, 255, 0.08);
-  --nav-text: rgba(255, 255, 255, 0.5);
-  --nav-text-hover: #f3f0ff;
-  --nav-active: #c084fc;
-  --nav-active-bg: rgba(192, 132, 252, 0.12);
+  --nav-text: #94a3b8;
+  --nav-text-hover: #f8fafc;
+  --nav-active: #3b82f6;
+  --nav-active-bg: rgba(59, 130, 246, 0.15);
 
   --modal-bg: #131726;
   --modal-border: rgba(255, 255, 255, 0.1);

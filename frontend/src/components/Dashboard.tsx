@@ -135,7 +135,7 @@ const AddTripModal: React.FC<AddTripModalProps> = ({ onClose, onAdd }) => {
 
             {/* Trip Type */}
             <div className="form-group">
-              <label className="form-label">Where are you going?</label>
+              <label className="form-label">Where are you heading?</label>
               <div className="trip-type-grid">
                 {TRIP_TYPES.map(t => (
                   <button
@@ -185,12 +185,12 @@ const AddTripModal: React.FC<AddTripModalProps> = ({ onClose, onAdd }) => {
             {/* Note */}
             <div className="form-group">
               <label className="form-label" htmlFor="trip-note">
-                📝 Note <span className="optional-tag">optional</span>
+                📝 Note <span className="optional-tag">Optional</span>
               </label>
               <textarea
                 id="trip-note"
                 className="form-input form-textarea"
-                placeholder="e.g. Carry extra clothes, collect fees..."
+                placeholder="e.g. Bring extra clothes, pick up keys..."
                 value={form.note}
                 onChange={e => handleChange('note', e.target.value)}
                 rows={2}
@@ -246,7 +246,7 @@ const AIResultModal = ({ data, onClose }: { data: AIResponseData; onClose: () =>
               <span className="ai-insight-val">{data.detected_date_str}</span>
             </div>
             <div className="ai-insight-row" style={{ flexDirection: 'column', alignItems: 'flex-start', gap: 6 }}>
-              <span className="ai-insight-label">🎒 Added to Checklist ({data.extracted_items.length} items)</span>
+              <span className="ai-insight-label">🎒 Added to checklist ({data.extracted_items.length} items)</span>
               <div className="ai-items-tags">
                 {data.extracted_items.map((item, idx) => (
                   <span key={idx} className="ai-item-tag">{item}</span>
@@ -344,7 +344,7 @@ const Dashboard: React.FC = () => {
         const res = await axios.get('http://localhost:8001/laundry/stats/1');
         setLaundryStats(res.data);
       } catch {
-        setApiError('Backend offline — showing demo data.');
+        setApiError('Backend offline - Showing demo data.');
       } finally {
         setIsLoading(false);
       }
@@ -416,7 +416,7 @@ const Dashboard: React.FC = () => {
               <input
                 type="text"
                 className="db-ai-input"
-                placeholder='🎙️ സംസാരിച്ചാലോ ടൈപ്പ് ചെയ്താലോ മതി! (ഉദാ: "ഈ വെള്ളിയാഴ്ച വീട്ടിൽ പോകണം, ലാപ്ടോപ്പും ജാക്കറ്റും എടുക്കാൻ മറക്കരുത്")'
+                placeholder='🎙️ Speak or type! (e.g. "Going home this Friday, remind me to pack laptop and jacket")'
                 value={aiPrompt}
                 onChange={e => setAiPrompt(e.target.value)}
                 disabled={isAiLoading}
@@ -426,7 +426,7 @@ const Dashboard: React.FC = () => {
                 type="button"
                 className={`db-ai-mic-btn ${isListening ? 'listening' : ''}`}
                 onClick={handleStartVoice}
-                title={isListening ? 'സംസാരിച്ചോളൂ... (Listening...)' : 'വോയ്സ് ഇൻപുട്ട് (Voice Input)'}
+                title={isListening ? 'Listening...' : 'Voice Input'}
                 aria-label="Start voice input"
               >
                 <Mic size={18} />
@@ -438,9 +438,9 @@ const Dashboard: React.FC = () => {
                 id="ai-quick-add-submit"
               >
                 {isAiLoading ? (
-                  <><Loader2 size={16} className="tm-spinner" /> അനലൈസ് ചെയ്യുന്നു...</>
+                  <><Loader2 size={16} className="tm-spinner" /> Analyzing...</>
                 ) : (
-                  <><Sparkles size={16} /> AI Add</>
+                  <><Sparkles size={16} /> Quick Add</>
                 )}
               </button>
             </form>
@@ -467,7 +467,7 @@ const Dashboard: React.FC = () => {
                 <div className="db-action-emoji">🏠</div>
                 <div className="db-action-body">
                   <p className="db-action-title">Going Home</p>
-                  <p className="db-action-hint">Pack essentials &amp; laundry</p>
+                  <p className="db-action-hint">Pack dirty clothes & essentials</p>
                 </div>
                 <div className="db-action-arrow">
                   <ChevronRight size={18} />
@@ -543,7 +543,7 @@ const Dashboard: React.FC = () => {
                 </div>
                 <div className="db-stat-pill db-pill-red">
                   <p className="db-pill-num">{laundryStats.dirty}</p>
-                  <p className="db-pill-lbl">Need wash</p>
+                  <p className="db-pill-lbl">To Wash</p>
                 </div>
                 <div className="db-stat-pill db-pill-neutral">
                   <p className="db-pill-num">{total}</p>

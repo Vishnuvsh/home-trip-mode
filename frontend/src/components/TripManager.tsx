@@ -197,10 +197,10 @@ const TripManager: React.FC = () => {
 
         {/* AI Smart Assistant Card */}
         <div className="tm-card tm-ai-card">
-          <div className="tm-card-eyebrow" style={{ color: '#8b5cf6' }}>✨ AI Smart Packing Assistant (ഏറ്റവും മികച്ചത്! ⭐)</div>
+          <div className="tm-card-eyebrow" style={{ color: '#8b5cf6' }}>✨ AI Smart Packing Assistant (Best! ⭐)</div>
           <h2 className="tm-card-title">Describe your trip details</h2>
           <p style={{ color: 'var(--text-dim)', fontSize: '0.9rem', marginBottom: '1rem' }}>
-            e.g. 4 ദിവസത്തേക്ക് വീട്ടിലേക്ക് പോകുന്നു, മഴക്കാലം
+            e.g. Going home for 4 days, rainy weather
           </p>
 
           <form onSubmit={handleAIAssistant}>
@@ -215,7 +215,7 @@ const TripManager: React.FC = () => {
               type="submit"
               disabled={isLoading || !prompt.trim()}
               className="tm-btn tm-btn-ai"
-              style={{ background: 'linear-gradient(135deg, #8b5cf6 0%, #6366f1 100%)', width: '100%' }}
+              style={{ width: '100%' }}
             >
               {isLoading ? (
                 <><Loader2 size={18} className="tm-spinner" /> Generating Custom Checklist…</>
