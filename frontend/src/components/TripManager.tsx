@@ -142,9 +142,9 @@ const TripManager: React.FC = () => {
   const progress = checklist.length === 0 ? 0 : Math.round((completedCount / checklist.length) * 100);
 
   return (
-    <div className="tm-page">
-      <div className="tm-orb tm-orb-1" />
-      <div className="tm-orb tm-orb-2" />
+    <div className="page-container">
+      <div className="bg-orb bg-orb-1" />
+      <div className="bg-orb bg-orb-2" />
 
       <div className="tm-container">
 
@@ -159,19 +159,19 @@ const TripManager: React.FC = () => {
 
         {/* Alerts */}
         {error && (
-          <div className="tm-alert tm-alert-danger">
+          <div className="alert alert-danger">
             <AlertCircle size={18} />
             {error}
           </div>
         )}
         {success && !aiResult && (
-          <div className="tm-alert tm-alert-success">
+          <div className="alert alert-success">
             <Check size={18} />
             Trip created! Your personalised checklist is below.
           </div>
         )}
         {aiResult && (
-          <div className="tm-alert tm-alert-success" style={{ background: 'rgba(16, 185, 129, 0.15)', borderColor: '#10b981', color: '#10b981', display: 'flex', flexDirection: 'column', gap: '12px' }}>
+          <div className="alert alert-success" style={{ background: 'rgba(16, 185, 129, 0.15)', borderColor: '#10b981', color: '#10b981', display: 'flex', flexDirection: 'column', gap: '12px' }}>
             <div style={{ display: 'flex', alignItems: 'flex-start', gap: '8px' }}>
               <Sparkles size={18} style={{ marginTop: '2px', flexShrink: 0 }} />
               <span>{aiResult.ai_summary}</span>
@@ -196,7 +196,7 @@ const TripManager: React.FC = () => {
         )}
 
         {/* AI Smart Assistant Card */}
-        <div className="tm-card tm-ai-card">
+        <div className="card tm-ai-card">
           <div className="tm-card-eyebrow" style={{ color: '#8b5cf6' }}>✨ AI Smart Packing Assistant (Best! ⭐)</div>
           <h2 className="tm-card-title">Describe your trip details</h2>
           <p style={{ color: 'var(--text-dim)', fontSize: '0.9rem', marginBottom: '1rem' }}>
@@ -214,7 +214,7 @@ const TripManager: React.FC = () => {
             <button
               type="submit"
               disabled={isLoading || !prompt.trim()}
-              className="tm-btn tm-btn-ai"
+              className="btn tm-btn-ai"
               style={{ width: '100%' }}
             >
               {isLoading ? (
@@ -227,7 +227,7 @@ const TripManager: React.FC = () => {
         </div>
 
         {/* Trip Selection Card */}
-        <div className="tm-card">
+        <div className="card">
           <div className="tm-card-eyebrow">Step 1</div>
           <h2 className="tm-card-title">Where are you heading?</h2>
 
@@ -257,7 +257,7 @@ const TripManager: React.FC = () => {
             <button
               type="submit"
               disabled={isLoading}
-              className="tm-btn"
+              className="btn"
               id="generate-checklist-btn"
             >
               {isLoading ? (
@@ -271,7 +271,7 @@ const TripManager: React.FC = () => {
 
         {/* Checklist Card */}
         {checklist.length > 0 && (
-          <div className="tm-card tm-checklist-card">
+          <div className="card tm-checklist-card">
             <div className="tm-card-eyebrow">Step 2</div>
             <div className="tm-checklist-header">
               <h2 className="tm-card-title" style={{ margin: 0 }}>
@@ -303,7 +303,7 @@ const TripManager: React.FC = () => {
                     </div>
                     <div className="tm-item-body">
                       <p className="tm-item-name">{item.item_name}</p>
-                      <span className={`tm-category-pill tm-pill-${colorKey}`}>
+                      <span className={`pill pill-${colorKey}`}>
                         {item.category}
                       </span>
                     </div>

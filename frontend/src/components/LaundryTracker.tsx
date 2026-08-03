@@ -46,9 +46,9 @@ const LaundryTracker = () => {
   const cleanPct = total === 0 ? 0 : Math.round((cleanClothes.length / total) * 100);
 
   return (
-    <div className="lt-page">
-      <div className="lt-orb lt-orb-1" />
-      <div className="lt-orb lt-orb-2" />
+    <div className="page-container">
+      <div className="bg-orb bg-orb-1" />
+      <div className="bg-orb bg-orb-2" />
 
       <div className="lt-container">
 
@@ -65,13 +65,13 @@ const LaundryTracker = () => {
         </div>
 
         {error && (
-          <div className="lt-alert lt-alert-danger">
+          <div className="alert alert-danger">
             <AlertCircle size={18} /> {error}
           </div>
         )}
 
         {/* Summary bar */}
-        <div className="lt-summary-card">
+        <div className="card lt-summary-card">
           <div className="lt-summary-text">
             <span className="lt-summary-label">Wardrobe health</span>
             <span className="lt-summary-pct">{cleanPct}% clean</span>
@@ -90,7 +90,7 @@ const LaundryTracker = () => {
         </div>
 
         {/* Add item form */}
-        <div className="lt-add-card">
+        <div className="card lt-add-card">
           <form onSubmit={handleAddItem} className="lt-form">
             <div className="lt-input-wrap">
               <Shirt size={16} className="lt-input-icon" />
@@ -103,7 +103,7 @@ const LaundryTracker = () => {
                 id="clothing-item-input"
               />
             </div>
-            <button type="submit" className="lt-btn" id="add-clothing-btn">
+            <button type="submit" className="btn" id="add-clothing-btn">
               <Plus size={18} /> Add
             </button>
           </form>
@@ -113,13 +113,13 @@ const LaundryTracker = () => {
         <div className="lt-grid">
 
           {/* Dirty Column */}
-          <div className="lt-card lt-card-dirty">
+          <div className="card lt-card lt-card-dirty">
             <div className="lt-card-header">
               <div className="lt-card-header-left">
                 <XCircle size={18} className="lt-icon-red" />
                 <h2 className="lt-card-title">Dirty</h2>
               </div>
-              <span className={`lt-badge lt-badge-red ${recentId !== null ? 'badge-bounce' : ''}`}>
+              <span className={`pill pill-red ${recentId !== null ? 'badge-bounce' : ''}`}>
                 {dirtyClothes.length}
               </span>
             </div>
@@ -164,13 +164,13 @@ const LaundryTracker = () => {
           </div>
 
           {/* Clean Column */}
-          <div className="lt-card lt-card-clean">
+          <div className="card lt-card lt-card-clean">
             <div className="lt-card-header">
               <div className="lt-card-header-left">
                 <CheckCircle2 size={18} className="lt-icon-green" />
                 <h2 className="lt-card-title">Clean</h2>
               </div>
-              <span className="lt-badge lt-badge-green">{cleanClothes.length}</span>
+              <span className="pill pill-green">{cleanClothes.length}</span>
             </div>
 
             {cleanClothes.length === 0 ? (

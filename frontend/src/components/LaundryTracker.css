@@ -2,47 +2,6 @@
    LaundryTracker.css — Full light/dark theme support
 ═══════════════════════════════════════════════════════════════ */
 
-/* ── Page ── */
-.lt-page {
-  width: 100%;
-  font-family: var(--font);
-  background: var(--bg);
-  min-height: 100vh;
-  position: relative;
-  padding: 0 24px 60px;
-  color: var(--text);
-  transition: background 0.3s ease;
-  overflow-x: hidden;
-}
-
-.lt-orb {
-  position: fixed;
-  border-radius: 50%;
-  filter: blur(80px);
-  pointer-events: none;
-  z-index: 0;
-  animation: orb-float 10s ease-in-out infinite;
-}
-.lt-orb-1 {
-  width: 360px; height: 360px;
-  background: radial-gradient(circle, var(--green-glow) 0%, transparent 70%);
-  top: -80px; right: -80px;
-}
-.lt-orb-2 {
-  width: 280px; height: 280px;
-  background: radial-gradient(circle, var(--red-glow) 0%, transparent 70%);
-  bottom: 20%; left: -60px;
-  animation-delay: -5s;
-}
-
-.lt-container {
-  max-width: 100%;
-  margin: 0 auto;
-  position: relative;
-  z-index: 2;
-  padding: 44px 32px 0;
-}
-
 /* ── Header ── */
 .lt-header {
   display: flex;
@@ -87,36 +46,11 @@
   font-weight: 500;
 }
 
-/* ── Alert ── */
-.lt-alert {
-  padding: 16px 20px;
-  border-radius: var(--radius-sm);
-  margin-bottom: 24px;
-  font-size: 14px;
-  font-weight: 500;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-.lt-alert-danger {
-  background: var(--red-light);
-  border: 1.5px solid rgba(225, 29, 72, 0.3);
-  color: var(--red);
-}
-
 /* ── Summary Card ── */
 .lt-summary-card {
-  background: var(--surface);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  border-radius: var(--radius);
-  border: 1.5px solid var(--border);
   padding: 22px 24px;
   margin-bottom: 16px;
-  box-shadow: var(--shadow-sm);
-  animation: fade-up 0.45s ease both;
   animation-delay: 0.05s;
-  transition: var(--transition);
 }
 
 .lt-summary-card:hover {
@@ -182,15 +116,8 @@
 
 /* ── Add Item Card ── */
 .lt-add-card {
-  background: var(--surface);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  border-radius: var(--radius-sm);
-  border: 1.5px solid var(--border);
   padding: 16px 20px;
   margin-bottom: 20px;
-  box-shadow: var(--shadow-sm);
-  animation: fade-up 0.45s ease both;
   animation-delay: 0.1s;
 }
 
@@ -235,31 +162,6 @@
   box-shadow: 0 0 0 3px var(--accent-glow);
 }
 
-.lt-btn {
-  background: var(--accent);
-  color: #fff;
-  border: none;
-  padding: 13px 20px;
-  border-radius: var(--radius-xs);
-  font-size: 14px;
-  font-weight: 700;
-  cursor: pointer;
-  transition: var(--transition);
-  display: flex;
-  align-items: center;
-  gap: 7px;
-  white-space: nowrap;
-  font-family: var(--font);
-  box-shadow: 0 4px 16px var(--accent-glow);
-}
-
-.lt-btn:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 22px var(--accent-glow);
-}
-
-.lt-btn:active { transform: scale(0.98); }
-
 /* ── Two-column Grid ── */
 .lt-grid {
   display: grid;
@@ -273,15 +175,7 @@
 
 /* ── Clothes Card ── */
 .lt-card {
-  background: var(--surface);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  border-radius: var(--radius);
-  border: 1.5px solid var(--border);
   padding: 22px;
-  transition: var(--transition);
-  box-shadow: var(--shadow-sm);
-  animation: fade-up 0.45s ease both;
 }
 
 .lt-card:nth-child(1) { animation-delay: 0.15s; }
@@ -320,17 +214,7 @@
 .lt-icon-red   { color: var(--red); }
 .lt-icon-green { color: var(--green); }
 
-/* Badge */
-.lt-badge {
-  font-size: 13px;
-  font-weight: 800;
-  padding: 4px 12px;
-  border-radius: 99px;
-  transition: transform 0.2s;
-}
-.lt-badge-red   { background: var(--red-light);   color: var(--red);   border: 1px solid rgba(225,29,72,0.2); }
-.lt-badge-green { background: var(--green-light); color: var(--green); border: 1px solid rgba(16,208,122,0.2); }
-
+/* Badge Bounce */
 @keyframes badge-bounce {
   0%   { transform: scale(1); }
   40%  { transform: scale(1.3); }

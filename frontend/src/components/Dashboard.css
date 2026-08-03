@@ -2,40 +2,6 @@
    Dashboard.css — Full light/dark theme support via CSS variables
 ═══════════════════════════════════════════════════════════════ */
 
-/* ── Page Shell ─────────────────────────────────────────────── */
-.db-page {
-  width: 100%;
-  font-family: var(--font);
-  background: var(--bg);
-  min-height: 100vh;
-  position: relative;
-  overflow-x: hidden;
-  transition: background 0.3s ease;
-}
-
-/* ── Ambient Orbs ───────────────────────────────────────────── */
-.db-orb {
-  position: fixed;
-  border-radius: 50%;
-  filter: blur(80px);
-  pointer-events: none;
-  z-index: 0;
-  animation: orb-float 12s ease-in-out infinite;
-  will-change: transform;
-}
-.db-orb-1 {
-  width: 400px; height: 400px;
-  background: radial-gradient(circle, var(--hero-orb1) 0%, transparent 70%);
-  top: -120px; right: -80px;
-}
-.db-orb-2 {
-  width: 300px; height: 300px;
-  background: radial-gradient(circle, var(--hero-orb2) 0%, transparent 70%);
-  bottom: 10%; left: -60px;
-  animation-delay: -6s;
-  animation-duration: 14s;
-}
-
 /* ── Hero ───────────────────────────────────────────────────── */
 .db-hero {
   background: var(--hero-bg);
@@ -183,22 +149,6 @@
   border: 1px solid rgba(108, 95, 255, 0.2);
 }
 
-/* ── Alert ──────────────────────────────────────────────────── */
-.db-alert {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 14px 18px;
-  border-radius: var(--radius-sm);
-  background: var(--red-light);
-  border: 1px solid rgba(225, 29, 72, 0.25);
-  color: var(--red);
-  font-size: 13px;
-  font-weight: 500;
-  margin-bottom: 24px;
-  animation: fade-up 0.3s ease both;
-}
-
 /* ═══════════════════════════════════════════════════
    ACTION CARDS
 ═══════════════════════════════════════════════════ */
@@ -213,11 +163,6 @@
 }
 
 .db-action-card {
-  background: var(--surface);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  border-radius: var(--radius);
-  border: 1.5px solid var(--border);
   padding: 22px 20px;
   display: flex;
   align-items: center;
@@ -226,7 +171,6 @@
   transition: var(--transition);
   position: relative;
   overflow: hidden;
-  box-shadow: var(--shadow-sm);
 }
 
 .db-action-card::after {
@@ -322,14 +266,7 @@
    LAUNDRY CARD
 ═══════════════════════════════════════════════════ */
 .db-laundry-card {
-  background: var(--surface);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  border-radius: var(--radius);
-  border: 1.5px solid var(--border);
   padding: 24px;
-  box-shadow: var(--shadow-sm);
-  transition: var(--transition);
   display: flex;
   flex-direction: column;
   gap: 20px;
@@ -452,14 +389,8 @@
    TRIPS CARD
 ═══════════════════════════════════════════════════ */
 .db-trips-card {
-  background: var(--surface);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  border-radius: var(--radius);
-  border: 1.5px solid var(--border);
   overflow: hidden;
   margin-bottom: 14px;
-  box-shadow: var(--shadow-sm);
 }
 
 .db-trips-list { }

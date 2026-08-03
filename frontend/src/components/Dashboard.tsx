@@ -64,13 +64,13 @@ const formatDate = (dateStr: string) => {
 /* ── Status Badge ── */
 const TripStatusBadge = ({ status }: { status: string }) => {
   const map: Record<string, { cls: string; dot: string }> = {
-    Pending:   { cls: 'badge-amber',  dot: '🟡' },
-    Planned:   { cls: 'badge-indigo', dot: '🔵' },
-    Completed: { cls: 'badge-green',  dot: '🟢' },
-    Cancelled: { cls: 'badge-red',    dot: '🔴' },
+    Pending:   { cls: 'pill-amber',  dot: '🟡' },
+    Planned:   { cls: 'pill-indigo', dot: '🔵' },
+    Completed: { cls: 'pill-green',  dot: '🟢' },
+    Cancelled: { cls: 'pill-red',    dot: '🔴' },
   };
   const { cls } = map[status] || map.Pending;
-  return <span className={`status-badge ${cls}`}>{status}</span>;
+  return <span className={`pill ${cls}`}>{status}</span>;
 };
 
 /* ════════════════════════════════════════
@@ -377,11 +377,11 @@ const Dashboard: React.FC = () => {
         />
       )}
 
-      <div className="db-page">
+      <div className="page-container">
 
         {/* ── Ambient background orbs ── */}
-        <div className="db-orb db-orb-1" />
-        <div className="db-orb db-orb-2" />
+        <div className="bg-orb bg-orb-1" />
+        <div className="bg-orb bg-orb-2" />
 
         {/* ═══════════════ HERO ═══════════════ */}
         <div className="db-hero">
@@ -448,7 +448,7 @@ const Dashboard: React.FC = () => {
 
           {/* API offline notice */}
           {apiError && (
-            <div className="db-alert">
+            <div className="alert alert-danger">
               <WifiOff size={16} />
               {apiError}
             </div>
@@ -463,7 +463,7 @@ const Dashboard: React.FC = () => {
 
             <div className="db-actions-grid">
               {/* Going Home */}
-              <div className="db-action-card db-action-amber">
+              <div className="card db-action-card db-action-amber">
                 <div className="db-action-emoji">🏠</div>
                 <div className="db-action-body">
                   <p className="db-action-title">Going Home</p>
@@ -475,7 +475,7 @@ const Dashboard: React.FC = () => {
               </div>
 
               {/* Returning */}
-              <div className="db-action-card db-action-indigo">
+              <div className="card db-action-card db-action-indigo">
                 <div className="db-action-emoji">🏢</div>
                 <div className="db-action-body">
                   <p className="db-action-title">Returning to PG</p>
@@ -495,7 +495,7 @@ const Dashboard: React.FC = () => {
               Laundry Overview
             </h2>
 
-            <div className="db-laundry-card">
+            <div className="card db-laundry-card">
               <div className="db-laundry-icon-wrap">
                 <Shirt size={22} className="db-laundry-icon" />
                 {isLoading && <span className="db-loading-pulse" />}
@@ -563,7 +563,7 @@ const Dashboard: React.FC = () => {
               <span className="db-trip-count">{trips.length}</span>
             </div>
 
-            <div className="db-trips-card">
+            <div className="card db-trips-card">
               {trips.length === 0 ? (
                 <div className="db-trips-empty">
                   <span className="db-trips-empty-icon">🗺️</span>
