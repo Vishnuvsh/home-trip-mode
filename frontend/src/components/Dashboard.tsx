@@ -1,8 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import {
-  Shirt, AlertCircle,
-  Calendar, ChevronRight, Plus, X, Check, WifiOff,
-  Sparkles, Trash2, Mic, Loader2, Bot
+  Shirt, Calendar, Plus, X, Bot, Mic, Loader2, Sparkles, AlertCircle, Check, MapPin, ChevronRight, Home, Building, Plane, Trash2
 } from 'lucide-react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
@@ -16,11 +14,6 @@ interface Trip {
   date: string;
   status: string;
   note: string;
-}
-
-interface AddTripModalProps {
-  onClose: () => void;
-  onAdd: (trip: Trip) => void;
 }
 
 interface AIResponseData {
@@ -38,10 +31,10 @@ interface AIResponseData {
 
 /* ── Constants ── */
 const TRIP_TYPES = [
-  { value: 'going_home',  label: 'Going Home',       icon: '🏠', color: 'amber' },
-  { value: 'returning',   label: 'Returning to PG',  icon: '🏢', color: 'indigo' },
-  { value: 'weekend',     label: 'Weekend Trip',     icon: '🌄', color: 'green' },
-  { value: 'other',       label: 'Other',            icon: '📍', color: 'red' },
+  { value: 'going_home',  label: 'Going Home',       icon: <Home size={18} /> },
+  { value: 'returning',   label: 'Returning to PG',  icon: <Building size={18} /> },
+  { value: 'weekend',     label: 'Weekend Trip',     icon: <Plane size={18} /> },
+  { value: 'other',       label: 'Other',            icon: <MapPin size={18} /> },
 ];
 
 const STATUS_OPTIONS = ['Pending', 'Planned', 'Completed', 'Cancelled'];
@@ -61,24 +54,11 @@ const formatDate = (dateStr: string) => {
   });
 };
 
-/* ── Status Badge ── */
-const TripStatusBadge = ({ status }: { status: string }) => {
-  const map: Record<string, { cls: string; dot: string }> = {
-    Pending:   { cls: 'pill-amber',  dot: '🟡' },
-    Planned:   { cls: 'pill-indigo', dot: '🔵' },
-    Completed: { cls: 'pill-green',  dot: '🟢' },
-    Cancelled: { cls: 'pill-red',    dot: '🔴' },
-  };
-  const { cls } = map[status] || map.Pending;
-  return <span className={`pill ${cls}`}>{status}</span>;
-};
-
 /* ════════════════════════════════════════
    ADD TRIP MODAL
 ════════════════════════════════════════ */
-const AddTripModal: React.FC<AddTripModalProps> = ({ onClose, onAdd }) => {
+const AddTripModal = ({ onClose, onAdd }: { onClose: () => void, onAdd: (t: Trip) => void }) => {
   const [form, setForm] = useState({ type: 'going_home', date: '', status: 'Pending', note: '' });
-  const [submitted, setSubmitted] = useState(false);
   const [error, setError] = useState('');
 
   const handleChange = (field: string, value: string) => {
@@ -92,172 +72,84 @@ const AddTripModal: React.FC<AddTripModalProps> = ({ onClose, onAdd }) => {
     const newTrip: Trip = {
       id: Date.now(),
       type: selected.label,
-      icon: selected.icon,
+      icon: selected.value === 'going_home' ? '🏠' : selected.value === 'returning' ? '🏢' : '✈️',
       date: form.date,
       status: form.status,
       note: form.note,
     };
-    setSubmitted(true);
-    setTimeout(() => { onAdd(newTrip); onClose(); }, 1000);
-  };
-
-  /* click-outside to close */
-  const handleOverlayClick = (e: React.MouseEvent<HTMLDivElement>) => {
-    if (e.target === e.currentTarget) onClose();
+    onAdd(newTrip);
+    onClose();
   };
 
   return (
-    <div className="modal-overlay" onClick={handleOverlayClick}>
-      <div className="modal-box" role="dialog" aria-modal="true">
-
-        {/* Header */}
+    <div className="premium-modal-overlay" onClick={(e) => e.target === e.currentTarget && onClose()}>
+      <div className="premium-modal">
         <div className="modal-header">
-          <div className="modal-header-left">
-            <div className="modal-icon-pill"><Calendar size={18} /></div>
-            <h2 className="modal-title">Add a Trip ✈️</h2>
+          <div className="modal-title-wrap">
+            <div className="modal-icon"><Calendar size={20} /></div>
+            <h2>Plan a Trip</h2>
           </div>
-          <button className="modal-close-btn" onClick={onClose} aria-label="Close">
-            <X size={18} />
-          </button>
-        </div>
-
-        {submitted ? (
-          /* ── Success ── */
-          <div className="modal-success">
-            <div className="success-circle">
-              <Check size={32} color="#fff" strokeWidth={3} />
-            </div>
-            <p className="success-title">Trip added! 🎉</p>
-            <p className="success-sub">Your packing list is ready.</p>
-          </div>
-        ) : (
-          <div className="modal-body">
-
-            {/* Trip Type */}
-            <div className="form-group">
-              <label className="form-label">Where are you heading?</label>
-              <div className="trip-type-grid">
-                {TRIP_TYPES.map(t => (
-                  <button
-                    key={t.value}
-                    className={`trip-type-btn trip-type-${t.color} ${form.type === t.value ? 'selected' : ''}`}
-                    onClick={() => handleChange('type', t.value)}
-                  >
-                    <span className="trip-type-emoji">{t.icon}</span>
-                    <span className="trip-type-label">{t.label}</span>
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {/* Date */}
-            <div className="form-group">
-              <label className="form-label" htmlFor="trip-date">📅 Travel Date</label>
-              <input
-                id="trip-date"
-                type="date"
-                className="form-input"
-                value={form.date}
-                min={new Date().toISOString().split('T')[0]}
-                onChange={e => handleChange('date', e.target.value)}
-              />
-              {error && (
-                <p className="form-error"><AlertCircle size={13} /> {error}</p>
-              )}
-            </div>
-
-            {/* Status */}
-            <div className="form-group">
-              <label className="form-label">Status</label>
-              <div className="status-pill-row">
-                {STATUS_OPTIONS.map(s => (
-                  <button
-                    key={s}
-                    className={`status-pill ${form.status === s ? `status-pill-active status-${s.toLowerCase()}` : ''}`}
-                    onClick={() => handleChange('status', s)}
-                  >
-                    {s}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {/* Note */}
-            <div className="form-group">
-              <label className="form-label" htmlFor="trip-note">
-                📝 Note <span className="optional-tag">Optional</span>
-              </label>
-              <textarea
-                id="trip-note"
-                className="form-input form-textarea"
-                placeholder="e.g. Bring extra clothes, pick up keys..."
-                value={form.note}
-                onChange={e => handleChange('note', e.target.value)}
-                rows={2}
-              />
-            </div>
-
-            {/* Actions */}
-            <div className="modal-actions">
-              <button className="btn-cancel" onClick={onClose}>Cancel</button>
-              <button className="btn-add" onClick={handleSubmit} id="confirm-add-trip">
-                <Plus size={18} /> Add Trip
-              </button>
-            </div>
-          </div>
-        )}
-      </div>
-    </div>
-  );
-};
-
-/* ════════════════════════════════════════
-   AI INSIGHT RESULT MODAL
-════════════════════════════════════════ */
-const AIResultModal = ({ data, onClose }: { data: AIResponseData; onClose: () => void }) => {
-  return (
-    <div className="modal-overlay" onClick={e => e.target === e.currentTarget && onClose()}>
-      <div className="modal-box" role="dialog" aria-modal="true" style={{ maxWidth: 480 }}>
-        <div className="ai-modal-header">
-          <div className="modal-icon-pill" style={{ background: 'rgba(236, 72, 153, 0.15)', color: '#ec4899' }}>
-            <Bot size={20} />
-          </div>
-          <div>
-            <span className="ai-modal-badge">✨ AI Smart Quick-Add</span>
-            <h2 className="modal-title" style={{ marginTop: 4 }}>Trip Auto-Planned!</h2>
-          </div>
-          <button className="modal-close-btn" style={{ marginLeft: 'auto' }} onClick={onClose} aria-label="Close">
-            <X size={18} />
-          </button>
+          <button className="modal-close" onClick={onClose}><X size={20} /></button>
         </div>
 
         <div className="modal-body">
-          <p style={{ fontSize: 14.5, lineHeight: 1.5, color: 'var(--text)', fontWeight: 500, margin: '0 0 12px' }}>
-            {data.ai_summary}
-          </p>
-
-          <div className="ai-insight-box">
-            <div className="ai-insight-row">
-              <span className="ai-insight-label">🏷️ Trip Type</span>
-              <span className="ai-insight-val">{data.detected_type}</span>
-            </div>
-            <div className="ai-insight-row">
-              <span className="ai-insight-label">📅 Travel Date</span>
-              <span className="ai-insight-val">{data.detected_date_str}</span>
-            </div>
-            <div className="ai-insight-row" style={{ flexDirection: 'column', alignItems: 'flex-start', gap: 6 }}>
-              <span className="ai-insight-label">🎒 Added to checklist ({data.extracted_items.length} items)</span>
-              <div className="ai-items-tags">
-                {data.extracted_items.map((item, idx) => (
-                  <span key={idx} className="ai-item-tag">{item}</span>
-                ))}
-              </div>
+          <div className="form-group">
+            <label>Trip Type</label>
+            <div className="trip-type-grid">
+              {TRIP_TYPES.map(t => (
+                <button
+                  key={t.value}
+                  className={`type-btn ${form.type === t.value ? 'selected' : ''}`}
+                  onClick={() => handleChange('type', t.value)}
+                >
+                  {t.icon} {t.label}
+                </button>
+              ))}
             </div>
           </div>
 
-          <div className="modal-actions" style={{ marginTop: 24 }}>
-            <button className="btn-add" style={{ width: '100%', justifyContent: 'center' }} id="close-ai-modal-btn" onClick={onClose}>
-              <Check size={18} /> Got it! View Dashboard
+          <div className="form-group">
+            <label>Travel Date</label>
+            <input
+              type="date"
+              className="premium-input"
+              value={form.date}
+              min={new Date().toISOString().split('T')[0]}
+              onChange={e => handleChange('date', e.target.value)}
+            />
+            {error && <span style={{ color: 'var(--red)', fontSize: '0.8rem', marginTop: 4 }}>{error}</span>}
+          </div>
+
+          <div className="form-group">
+            <label>Status</label>
+            <div className="status-row">
+              {STATUS_OPTIONS.map(s => (
+                <button
+                  key={s}
+                  className={`status-btn ${form.status === s ? 'active' : ''}`}
+                  onClick={() => handleChange('status', s)}
+                >
+                  {s}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div className="form-group">
+            <label>Notes (Optional)</label>
+            <input
+              type="text"
+              className="premium-input"
+              placeholder="e.g. Bring extra clothes..."
+              value={form.note}
+              onChange={e => handleChange('note', e.target.value)}
+            />
+          </div>
+
+          <div className="modal-actions">
+            <button className="btn-cancel" onClick={onClose}>Cancel</button>
+            <button className="btn-submit" onClick={handleSubmit}>
+              <Plus size={18} /> Add Trip
             </button>
           </div>
         </div>
@@ -267,7 +159,7 @@ const AIResultModal = ({ data, onClose }: { data: AIResponseData; onClose: () =>
 };
 
 /* ════════════════════════════════════════
-   DASHBOARD
+   DASHBOARD COMPONENT
 ════════════════════════════════════════ */
 const Dashboard: React.FC = () => {
   const navigate = useNavigate();
@@ -276,24 +168,36 @@ const Dashboard: React.FC = () => {
     { id: 1, type: 'Going Home',      icon: '🏠', date: '2026-06-20', status: 'Pending',   note: '' },
     { id: 2, type: 'Returning to PG', icon: '🏢', date: '2026-06-22', status: 'Planned',   note: '' },
   ]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [apiError, setApiError]   = useState<string | null>(null);
   const [showModal, setShowModal] = useState(false);
-
-  /* ── AI Quick-Add State ── */
   const [aiPrompt, setAiPrompt] = useState('');
   const [isAiLoading, setIsAiLoading] = useState(false);
-  const [aiResult, setAiResult] = useState<AIResponseData | null>(null);
   const [isListening, setIsListening] = useState(false);
+
+  useEffect(() => {
+    const fetchStats = async () => {
+      try {
+        const res = await axios.get('http://localhost:8001/laundry/stats/1');
+        setLaundryStats(res.data);
+      } catch (err) {
+        // Fallback or handle error quietly
+      }
+    };
+    fetchStats();
+  }, []);
+
+  const total = laundryStats.clean + laundryStats.dirty;
+  const cleanPct = total === 0 ? 0 : (laundryStats.clean / total) * 100;
+  const dirtyPct = total === 0 ? 0 : (laundryStats.dirty / total) * 100;
+  const { text: greeting, emoji: greetEmoji } = getGreeting();
 
   const handleStartVoice = () => {
     if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
-      alert('Voice input is not supported in this browser. Try Chrome or Edge!');
+      alert('Voice input is not supported in this browser.');
       return;
     }
     const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
     const recognition = new SpeechRecognition();
-    recognition.lang = 'ml-IN';
+    recognition.lang = 'en-IN';
     recognition.interimResults = false;
     recognition.maxAlternatives = 1;
 
@@ -313,312 +217,171 @@ const Dashboard: React.FC = () => {
     if (!aiPrompt.trim()) return;
     
     setIsAiLoading(true);
-    setApiError(null);
     try {
       const res = await axios.post('http://localhost:8001/ai/quick-add', {
         prompt: aiPrompt,
         user_id: 1,
       });
-      setAiResult(res.data);
       const newTrip: Trip = {
         id: res.data.trip.id,
         type: res.data.trip.trip_type,
-        icon: res.data.trip.trip_type === 'Going Home' ? '🏠' : res.data.trip.trip_type === 'Returning to PG' ? '🏢' : '✈️',
+        icon: res.data.trip.trip_type.includes('Home') ? '🏠' : res.data.trip.trip_type.includes('PG') ? '🏢' : '✈️',
         date: res.data.trip.trip_date.split('T')[0],
         status: res.data.trip.status,
         note: '✨ AI Auto-Planned',
       };
       setTrips(prev => [newTrip, ...prev]);
       setAiPrompt('');
-    } catch (err: any) {
-      alert(`AI Error: ${err.response?.data?.detail || err.message || "Failed to connect to backend. Is Uvicorn running?"}`);
+    } catch (err) {
+      alert(`AI Error: Could not connect to AI service.`);
     } finally {
       setIsAiLoading(false);
     }
   };
 
-  useEffect(() => {
-    const fetchData = async () => {
-      setIsLoading(true); setApiError(null);
-      try {
-        const res = await axios.get('http://localhost:8001/laundry/stats/1');
-        setLaundryStats(res.data);
-      } catch {
-        setApiError('Backend offline - Showing demo data.');
-      } finally {
-        setIsLoading(false);
-      }
-    };
-    fetchData();
-  }, []);
-
-  const handleAddTrip    = (t: Trip)    => setTrips(prev => [t, ...prev]);
-  const handleDeleteTrip = (id: number) => setTrips(prev => prev.filter(t => t.id !== id));
-
-  const total    = laundryStats.clean + laundryStats.dirty;
-  const cleanPct = total === 0 ? 0 : Math.round((laundryStats.clean / total) * 100);
-  const dirtyPct = total === 0 ? 0 : Math.round((laundryStats.dirty / total) * 100);
-
-  const { text: greeting, emoji: greetEmoji } = getGreeting();
-
   return (
-    <>
-      {showModal && (
-        <AddTripModal
-          onClose={() => setShowModal(false)}
-          onAdd={handleAddTrip}
-        />
-      )}
+    <div className="dashboard-premium-wrapper">
+      {showModal && <AddTripModal onClose={() => setShowModal(false)} onAdd={t => setTrips([t, ...trips])} />}
 
-      {aiResult && (
-        <AIResultModal
-          data={aiResult}
-          onClose={() => setAiResult(null)}
-        />
-      )}
-
-      <div className="page-container">
-
-        {/* ── Ambient background orbs ── */}
-        <div className="bg-orb bg-orb-1" />
-        <div className="bg-orb bg-orb-2" />
-
-        {/* ═══════════════ HERO ═══════════════ */}
-        <div className="db-hero">
-          <div className="db-hero-dots" />
-          <div className="db-hero-content">
-            <p className="db-date-label">
-              {new Date().toLocaleDateString('en-IN', {
-                weekday: 'long', day: 'numeric', month: 'long', year: 'numeric',
-              })}
-            </p>
-            <h1 className="db-greeting">
-              {greeting} {greetEmoji}
-            </h1>
-            <p className="db-subtitle">
-              <Sparkles size={14} className="db-subtitle-icon" />
-              Your hostel essentials, at a glance.
-            </p>
+      <div className="db-container">
+        
+        {/* ── Hero / Header ── */}
+        <header className="db-header">
+          <div className="db-date-pill">
+            <span className="db-date-dot"></span>
+            {new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' })}
           </div>
-          <div className="db-hero-bubble db-hero-bubble-1" />
-          <div className="db-hero-bubble db-hero-bubble-2" />
-        </div>
+          <h1 className="db-greeting">{greeting} {greetEmoji}</h1>
+          <p className="db-subtitle">
+            <Sparkles size={16} className="text-accent-primary" /> 
+            Here's what's happening with your hostel essentials.
+          </p>
+        </header>
 
-        {/* ═══════════════ BODY ═══════════════ */}
-        <div className="db-body">
-
-          {/* ── AI Smart Quick-Add Bar ── */}
-          <section className="db-ai-section">
-            <form onSubmit={handleAISubmit} className="db-ai-box">
-              <div className="db-ai-icon-wrap" title="AI Assistant Active">
-                <Bot size={20} />
-              </div>
-              <input
-                type="text"
-                className="db-ai-input"
-                placeholder='🎙️ Speak or type! (e.g. "Going home this Friday, remind me to pack laptop and jacket")'
-                value={aiPrompt}
-                onChange={e => setAiPrompt(e.target.value)}
-                disabled={isAiLoading}
-                id="ai-quick-add-input"
-              />
-              <button
-                type="button"
-                className={`db-ai-mic-btn ${isListening ? 'listening' : ''}`}
-                onClick={handleStartVoice}
-                title={isListening ? 'Listening...' : 'Voice Input'}
-                aria-label="Start voice input"
-              >
-                <Mic size={18} />
-              </button>
-              <button
-                type="submit"
-                className="db-ai-submit-btn"
-                disabled={isAiLoading || !aiPrompt.trim()}
-                id="ai-quick-add-submit"
-              >
-                {isAiLoading ? (
-                  <><Loader2 size={16} className="tm-spinner" /> Analyzing...</>
-                ) : (
-                  <><Sparkles size={16} /> Quick Add</>
-                )}
-              </button>
-            </form>
-          </section>
-
-          {/* API offline notice */}
-          {apiError && (
-            <div className="alert alert-danger">
-              <WifiOff size={16} />
-              {apiError}
-            </div>
-          )}
-
-          {/* ── Quick-Action Cards ── */}
-          <section className="db-section">
-            <h2 className="db-section-title">
-              <span className="db-section-dot" />
-              Quick Actions
-            </h2>
-
-            <div className="db-actions-grid">
-              {/* Going Home */}
-              <div className="card db-action-card db-action-amber">
-                <div className="db-action-emoji">🏠</div>
-                <div className="db-action-body">
-                  <p className="db-action-title">Going Home</p>
-                  <p className="db-action-hint">Pack dirty clothes & essentials</p>
-                </div>
-                <div className="db-action-arrow">
-                  <ChevronRight size={18} />
-                </div>
-              </div>
-
-              {/* Returning */}
-              <div className="card db-action-card db-action-indigo">
-                <div className="db-action-emoji">🏢</div>
-                <div className="db-action-body">
-                  <p className="db-action-title">Returning to PG</p>
-                  <p className="db-action-hint">Don't forget clean clothes</p>
-                </div>
-                <div className="db-action-arrow">
-                  <ChevronRight size={18} />
-                </div>
-              </div>
-            </div>
-          </section>
-
-          {/* ── Laundry Stats ── */}
-          <section className="db-section">
-            <h2 className="db-section-title">
-              <span className="db-section-dot db-section-dot-green" />
-              Laundry Overview
-            </h2>
-
-            <div className="card db-laundry-card">
-              <div className="db-laundry-icon-wrap">
-                <Shirt size={22} className="db-laundry-icon" />
-                {isLoading && <span className="db-loading-pulse" />}
-              </div>
-
-              <div className="db-laundry-stats">
-                {/* Clean */}
-                <div className="db-laundry-stat">
-                  <div className="db-laundry-stat-top">
-                    <span className="db-laundry-label">✅ Clean</span>
-                    <span className="db-laundry-count db-count-green">
-                      {laundryStats.clean}
-                    </span>
-                  </div>
-                  <div className="db-progress-track">
-                    <div
-                      className="db-progress-fill db-fill-green"
-                      style={{ width: `${cleanPct}%` }}
-                    />
-                  </div>
-                </div>
-
-                {/* Dirty */}
-                <div className="db-laundry-stat">
-                  <div className="db-laundry-stat-top">
-                    <span className="db-laundry-label">🧺 Dirty</span>
-                    <span className="db-laundry-count db-count-red">
-                      {laundryStats.dirty}
-                    </span>
-                  </div>
-                  <div className="db-progress-track">
-                    <div
-                      className="db-progress-fill db-fill-red"
-                      style={{ width: `${dirtyPct}%` }}
-                    />
-                  </div>
-                </div>
-              </div>
-
-              {/* Stat pills */}
-              <div className="db-laundry-pills">
-                <div className="db-stat-pill db-pill-green">
-                  <p className="db-pill-num">{laundryStats.clean}</p>
-                  <p className="db-pill-lbl">Ready</p>
-                </div>
-                <div className="db-stat-pill db-pill-red">
-                  <p className="db-pill-num">{laundryStats.dirty}</p>
-                  <p className="db-pill-lbl">To Wash</p>
-                </div>
-                <div className="db-stat-pill db-pill-neutral">
-                  <p className="db-pill-num">{total}</p>
-                  <p className="db-pill-lbl">Total</p>
-                </div>
-              </div>
-            </div>
-          </section>
-
-          {/* ── Upcoming Trips ── */}
-          <section className="db-section">
-            <div className="db-section-header">
-              <h2 className="db-section-title" style={{ margin: 0 }}>
-                <span className="db-section-dot db-section-dot-amber" />
-                Upcoming Trips
-              </h2>
-              <span className="db-trip-count">{trips.length}</span>
-            </div>
-
-            <div className="card db-trips-card">
-              {trips.length === 0 ? (
-                <div className="db-trips-empty">
-                  <span className="db-trips-empty-icon">🗺️</span>
-                  <p className="db-trips-empty-msg">No trips planned yet.</p>
-                  <p className="db-trips-empty-sub">Tap "Add a trip" to get started!</p>
-                </div>
-              ) : (
-                <div className="db-trips-list">
-                  {trips.map((trip, idx) => (
-                    <div
-                      key={trip.id}
-                      className="db-trip-item"
-                      style={{ animationDelay: `${idx * 60}ms`, cursor: 'pointer' }}
-                      onClick={() => navigate(`/trip-manager?trip_id=${trip.id}`)}
-                    >
-                      <div className="db-trip-emoji-wrap">
-                        <span className="db-trip-emoji">{trip.icon}</span>
-                      </div>
-                      <div className="db-trip-info">
-                        <p className="db-trip-name">{trip.type}</p>
-                        <p className="db-trip-date">
-                          <Calendar size={11} style={{ display: 'inline', marginRight: 4 }} />
-                          {formatDate(trip.date)}
-                        </p>
-                        {trip.note && <p className="db-trip-note">{trip.note}</p>}
-                      </div>
-                      <TripStatusBadge status={trip.status} />
-                      <button
-                        className="db-trip-delete"
-                        onClick={(e) => { e.stopPropagation(); handleDeleteTrip(trip.id); }}
-                        aria-label="Delete trip"
-                        title="Remove trip"
-                      >
-                        <Trash2 size={15} />
-                      </button>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-
-            {/* Add trip button */}
-            <button
-              className="db-add-btn"
-              onClick={() => setShowModal(true)}
-              id="add-trip-btn"
-            >
-              <div className="db-add-btn-icon"><Plus size={20} /></div>
-              <span>Add a trip</span>
+        {/* ── AI Input Bar ── */}
+        <section className="db-ai-section">
+          <form className="ai-input-bar" onSubmit={handleAISubmit}>
+            <Bot size={20} color="var(--accent-primary)" />
+            <input 
+              type="text" 
+              className="ai-input" 
+              placeholder='Try "Going home this weekend, remind me to pack laptop"'
+              value={aiPrompt}
+              onChange={e => setAiPrompt(e.target.value)}
+              disabled={isAiLoading}
+            />
+            <button type="button" className={`ai-mic-btn ${isListening ? 'listening' : ''}`} onClick={handleStartVoice}>
+              <Mic size={18} />
             </button>
-          </section>
+            <button type="submit" className="ai-submit-btn" disabled={isAiLoading || !aiPrompt.trim()}>
+              {isAiLoading ? <Loader2 size={16} className="animate-spin" /> : <Sparkles size={16} />}
+              Generate
+            </button>
+          </form>
+        </section>
 
-        </div>
+        {/* ── Quick Actions ── */}
+        <section className="db-grid-section">
+          <h2 className="section-title"><Check size={20} className="section-icon" /> Quick Actions</h2>
+          <div className="quick-actions-grid">
+            <div className="glass-card action-card action-home" onClick={() => setShowModal(true)}>
+              <div className="action-emoji">🏠</div>
+              <div className="action-info">
+                <h3>Going Home</h3>
+                <p>Pack essentials & dirty clothes</p>
+              </div>
+              <ChevronRight size={20} className="action-arrow" />
+            </div>
+            
+            <div className="glass-card action-card action-pg" onClick={() => setShowModal(true)}>
+              <div className="action-emoji">🏢</div>
+              <div className="action-info">
+                <h3>Returning to PG</h3>
+                <p>Don't forget clean clothes</p>
+              </div>
+              <ChevronRight size={20} className="action-arrow" />
+            </div>
+          </div>
+        </section>
+
+        {/* ── Laundry Overview ── */}
+        <section className="laundry-section">
+          <h2 className="section-title"><Shirt size={20} className="section-icon text-green" /> Laundry Status</h2>
+          <div className="glass-card laundry-content">
+            <div className="laundry-stats-grid">
+              <div className="stat-box clean">
+                <p className="stat-num">{laundryStats.clean}</p>
+                <p className="stat-lbl">Clean Items</p>
+              </div>
+              <div className="stat-box dirty">
+                <p className="stat-num">{laundryStats.dirty}</p>
+                <p className="stat-lbl">To Wash</p>
+              </div>
+              <div className="stat-box">
+                <p className="stat-num">{total}</p>
+                <p className="stat-lbl">Total Items</p>
+              </div>
+            </div>
+            
+            <div className="laundry-bars">
+              <div className="progress-group">
+                <div className="progress-label clean"><span>Clean & Ready</span> <span>{cleanPct.toFixed(0)}%</span></div>
+                <div className="progress-track">
+                  <div className="progress-fill fill-green" style={{ width: `${cleanPct}%` }}></div>
+                </div>
+              </div>
+              <div className="progress-group">
+                <div className="progress-label dirty"><span>Dirty / Pending</span> <span>{dirtyPct.toFixed(0)}%</span></div>
+                <div className="progress-track">
+                  <div className="progress-fill fill-red" style={{ width: `${dirtyPct}%` }}></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* ── Upcoming Trips ── */}
+        <section className="trips-section">
+          <div className="trips-header">
+            <h2 className="section-title" style={{ margin: 0 }}><Calendar size={20} className="section-icon" /> Upcoming Trips</h2>
+            <span className="trips-count-badge">{trips.length} active</span>
+          </div>
+          
+          <div className="glass-card" style={{ padding: trips.length === 0 ? '1.5rem' : '0.5rem' }}>
+            {trips.length === 0 ? (
+              <div className="empty-trips">
+                <span className="empty-icon">🎒</span>
+                <h3>No trips scheduled</h3>
+                <p>Plan your next journey and keep track of your packing list.</p>
+              </div>
+            ) : (
+              <div className="trips-list">
+                {trips.map((trip) => (
+                  <div key={trip.id} className="trip-item" onClick={() => navigate(`/trip-manager?trip_id=${trip.id}`)}>
+                    <div className="trip-emoji-wrapper">{trip.icon}</div>
+                    <div className="trip-details">
+                      <h3 className="trip-title">{trip.type}</h3>
+                      <p className="trip-date"><Calendar size={12} /> {formatDate(trip.date)}</p>
+                      {trip.note && <p className="trip-note">{trip.note}</p>}
+                    </div>
+                    <span className={`trip-status status-${trip.status}`}>{trip.status}</span>
+                    <button className="trip-delete-btn" onClick={(e) => { e.stopPropagation(); setTrips(trips.filter(t => t.id !== trip.id)); }}>
+                      <Trash2 size={16} />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+          
+          <button className="add-trip-btn-large" onClick={() => setShowModal(true)}>
+            <div className="add-trip-icon"><Plus size={20} /></div>
+            Add a new trip
+          </button>
+        </section>
+
       </div>
-    </>
+    </div>
   );
 };
 
