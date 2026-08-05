@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { Shirt, Plus, CheckCircle2, AlertCircle, Sparkles, Droplets, Wind, Loader2 } from 'lucide-react';
 import axios from 'axios';
+import { useAuth } from '../context/AuthContext';
 import './LaundryTracker.css';
 
 const API = 'http://localhost:8001';
-const USER_ID = 1;
 
 interface ClothingItem {
   id: number;
@@ -13,6 +13,7 @@ interface ClothingItem {
 }
 
 const LaundryTracker = () => {
+  const { userId } = useAuth();
   const [clothes, setClothes] = useState<ClothingItem[]>([]);
   const [newItemName, setNewItemName] = useState<string>('');
   const [error, setError] = useState<string | null>(null);
@@ -23,7 +24,7 @@ const LaundryTracker = () => {
     const fetchClothes = async () => {
       setIsLoading(true);
       try {
-        const res = await axios.get(`${API}/clothing/user/${USER_ID}`);
+        const res = await axios.get(`${API}/clothing/user/${userId}`);
         setClothes(res.data);
       } catch {
         setError('Could not load wardrobe. Make sure the backend is running.');
@@ -40,7 +41,7 @@ const LaundryTracker = () => {
     if (!name) return;
 
     try {
-      const res = await axios.post(`${API}/clothing/user/${USER_ID}`, {
+      const res = await axios.post(`${API}/clothing/user/${userId}`, {
         item_name: name,
         is_clean: true,
       });
@@ -77,7 +78,7 @@ const LaundryTracker = () => {
       await axios.delete(`${API}/clothing/${id}`);
     } catch {
       // Rollback: re-fetch to restore
-      const res = await axios.get(`${API}/clothing/user/${USER_ID}`);
+      const res = await axios.get(`${API}/clothing/user/${userId}`);
       setClothes(res.data);
       setError('Could not delete item. Please try again.');
     }

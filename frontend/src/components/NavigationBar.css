@@ -17,12 +17,12 @@
 .navbar-inner {
   max-width: 100%;
   margin: 0 auto;
-  padding: 0 32px;
+  padding: 0 24px 0 28px;
   height: 62px;
-  display: flex;
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
   align-items: center;
-  justify-content: space-between;
-  gap: 16px;
+  gap: 12px;
 }
 
 /* ── Brand ── */
@@ -38,6 +38,7 @@ a.navbar-brand {
   letter-spacing: -0.3px;
   transition: var(--transition-fast);
   flex-shrink: 0;
+  justify-self: start;
 }
 
 .navbar-brand-icon {
@@ -73,6 +74,7 @@ a.navbar-brand:focus {
   display: flex;
   align-items: center;
   gap: 2px;
+  justify-self: center;
 }
 
 .navbar-link,
@@ -169,4 +171,142 @@ a.navbar-link.active svg {
   .navbar-link {
     padding: 8px;
   }
+
+  .navbar-user-chip span {
+    display: none;
+  }
+
+  .navbar-logout-btn span {
+    display: none;
+  }
 }
+
+/* ── Right-side Actions ── */
+.navbar-right {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  justify-self: end;
+}
+
+/* kept for backward compat */
+.navbar-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  justify-self: end;
+}
+
+/* Divider */
+.navbar-divider {
+  width: 1px;
+  height: 24px;
+  background: var(--border-hover);
+  border-radius: 99px;
+  flex-shrink: 0;
+}
+
+/* ── User Chip ── */
+.navbar-user-chip {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  background: var(--accent-light);
+  border: 1.5px solid rgba(59, 130, 246, 0.2);
+  border-radius: 99px;
+  color: var(--accent);
+  font-size: 13px;
+  font-weight: 700;
+  white-space: nowrap;
+  max-width: 140px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.navbar-user-chip span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ── Logout Button ── */
+.navbar-logout-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 13px;
+  border: 1.5px solid var(--border-hover);
+  background: transparent;
+  border-radius: var(--radius-xs);
+  color: var(--text-muted);
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: var(--transition-fast);
+  font-family: var(--font);
+  white-space: nowrap;
+}
+
+.navbar-logout-btn:hover {
+  background: var(--red-light);
+  border-color: rgba(244, 63, 94, 0.3);
+  color: var(--red);
+}
+
+/* ── Live Clock ── */
+.navbar-clock {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 14px;
+  background: var(--surface);
+  border: 1.5px solid var(--border);
+  border-radius: 99px;
+  white-space: nowrap;
+}
+
+.navbar-clock-pulse {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--green);
+  flex-shrink: 0;
+  position: relative;
+}
+
+.navbar-clock-pulse::after {
+  content: '';
+  position: absolute;
+  inset: -3px;
+  border-radius: 50%;
+  background: var(--green);
+  opacity: 0.3;
+  animation: pulse-ring 1.5s ease-out infinite;
+}
+
+.navbar-clock-body {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.2;
+}
+
+.navbar-clock-time {
+  font-size: 13px;
+  font-weight: 800;
+  color: var(--accent);
+  letter-spacing: 0.03em;
+  font-variant-numeric: tabular-nums;
+}
+
+.navbar-clock-date {
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--text-dim);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+@media (max-width: 768px) {
+  .navbar-clock { display: none; }
+}
+

@@ -4,6 +4,7 @@ import {
 } from 'lucide-react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
 import './Dashboard.css';
 
 /* ── Types ── */
@@ -55,7 +56,7 @@ const AddTripModal = ({ onClose, onAdd }: { onClose: () => void, onAdd: () => vo
     if (!form.date) { setError('Please pick a travel date.'); return; }
     setIsSubmitting(true);
     try {
-      await axios.post('http://localhost:8001/trips/?user_id=1', {
+      await axios.post(`http://localhost:8001/trips/?user_id=${userId}`, {
         trip_type: form.type,
         trip_date: form.date,
         status: form.status,
@@ -140,6 +141,7 @@ const AddTripModal = ({ onClose, onAdd }: { onClose: () => void, onAdd: () => vo
 ════════════════════════════════════════ */
 const Dashboard: React.FC = () => {
   const navigate = useNavigate();
+  const { userId } = useAuth();
   const [laundryStats, setLaundryStats] = useState({ clean: 0, dirty: 0 });
   const [trips, setTrips] = useState<Trip[]>([]);
   const [tripsLoading, setTripsLoading] = useState(true);
@@ -150,15 +152,16 @@ const Dashboard: React.FC = () => {
 
   const fetchStats = async () => {
     try {
-      const res = await axios.get('http://localhost:8001/laundry/stats/1');
+      const res = await axios.get(`http://localhost:8001/laundry/stats/${userId}`);
       setLaundryStats(res.data);
-    } catch (err) {
+    } catch {
+      // Handle silently
     }
   };
 
   const fetchTrips = async () => {
     try {
-      const res = await axios.get('http://localhost:8001/trips/user/1');
+      const res = await axios.get(`http://localhost:8001/trips/user/${userId}`);
       setTrips(res.data);
     } catch (err) {
     } finally {
@@ -204,7 +207,7 @@ const Dashboard: React.FC = () => {
     
     setIsAiLoading(true);
     try {
-      await axios.post('http://localhost:8001/ai/quick-add', { prompt: aiPrompt, user_id: 1 });
+      await axios.post('http://localhost:8001/ai/quick-add', { prompt: aiPrompt, user_id: userId });
       await fetchTrips();
       await fetchStats();
       setAiPrompt('');

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { CheckCircle2, Package, AlertCircle, Check, Loader2, Sparkles, Navigation } from 'lucide-react';
 import axios from 'axios';
+import { useAuth } from '../context/AuthContext';
 import './TripManager.css';
 
 interface ChecklistItem {
@@ -44,6 +45,7 @@ const CATEGORY_COLORS: Record<string, string> = {
 };
 
 const TripManager: React.FC = () => {
+  const { userId } = useAuth();
   const [tripType, setTripType] = useState<string>('Going Home');
   const [prompt, setPrompt] = useState<string>('');
   const [checklist, setChecklist] = useState<ChecklistItem[]>([]);
@@ -79,7 +81,7 @@ const TripManager: React.FC = () => {
     setAiResult(null);
 
     try {
-      const res = await axios.post('http://localhost:8001/trips/?user_id=1', { trip_type: tripType });
+      const res = await axios.post(`http://localhost:8001/trips/?user_id=${userId}`, { trip_type: tripType });
       const newTripId = res.data.id;
 
       // Fetch the actual generated checklist from the DB
@@ -105,7 +107,7 @@ const TripManager: React.FC = () => {
     try {
       const response = await axios.post('http://localhost:8001/ai/quick-add', { 
         prompt: prompt,
-        user_id: 1 
+        user_id: userId 
       });
 
       const now = new Date().toLocaleString('en-IN', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit', hour12: true });
