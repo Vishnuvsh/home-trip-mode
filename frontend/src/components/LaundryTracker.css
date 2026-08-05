@@ -2,6 +2,15 @@
    LaundryTracker.css — Full light/dark theme support
 ═══════════════════════════════════════════════════════════════ */
 
+/* ── Container ── */
+.lt-container {
+  max-width: 860px;
+  margin: 0 auto;
+  padding: 60px 24px 100px;
+  position: relative;
+  z-index: 10;
+}
+
 /* ── Header ── */
 .lt-header {
   display: flex;
@@ -12,31 +21,41 @@
 }
 
 .lt-header-icon {
-  width: 58px; height: 58px;
-  border-radius: 18px;
-  background: var(--green-light);
+  width: 68px; height: 68px;
+  border-radius: 22px;
+  background: linear-gradient(135deg, var(--green-light), transparent);
+  backdrop-filter: blur(10px);
   color: var(--green);
   display: flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
-  border: 1.5px solid rgba(16, 208, 122, 0.25);
-  box-shadow: 0 8px 24px var(--green-glow);
+  border: 1px solid rgba(16, 208, 122, 0.4);
+  box-shadow: 0 16px 32px var(--green-glow), inset 0 2px 0 rgba(255,255,255,0.1);
   position: relative;
+  transition: var(--transition-spring);
+}
+
+.lt-header-icon:hover {
+  transform: scale(1.05) rotate(-5deg);
 }
 
 .lt-header-sparkle {
   position: absolute;
-  top: -4px; right: -4px;
+  top: -6px; right: -6px;
   color: var(--amber);
+  animation: float-rotate 3s ease-in-out infinite;
 }
 
 .lt-title {
-  font-size: 32px;
+  font-size: 40px;
   font-weight: 900;
   color: var(--text);
-  margin: 0 0 6px;
-  letter-spacing: -0.6px;
+  margin: 0 0 8px;
+  letter-spacing: -1px;
+  background: linear-gradient(135deg, var(--text) 0%, var(--text-dim) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
 }
 
 .lt-subtitle {
@@ -48,9 +67,10 @@
 
 /* ── Summary Card ── */
 .lt-summary-card {
-  padding: 22px 24px;
-  margin-bottom: 16px;
+  padding: 30px 32px;
+  margin-bottom: 24px;
   animation-delay: 0.05s;
+  background: linear-gradient(145deg, var(--surface), rgba(255,255,255,0.02));
 }
 
 .lt-summary-card:hover {
@@ -90,8 +110,8 @@
 .lt-summary-fill {
   height: 100%;
   border-radius: 99px;
-  background: var(--green);
-  box-shadow: none;
+  background: linear-gradient(90deg, var(--green), #34d399);
+  box-shadow: 0 0 16px var(--green-glow);
   transition: width 1.2s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
@@ -116,8 +136,8 @@
 
 /* ── Add Item Card ── */
 .lt-add-card {
-  padding: 16px 20px;
-  margin-bottom: 20px;
+  padding: 24px 28px;
+  margin-bottom: 32px;
   animation-delay: 0.1s;
 }
 
@@ -135,7 +155,7 @@
 
 .lt-input-icon {
   position: absolute;
-  left: 14px;
+  left: 18px;
   color: var(--text-dim);
   pointer-events: none;
   flex-shrink: 0;
@@ -143,15 +163,18 @@
 
 .lt-input {
   width: 100%;
-  background: var(--input-bg);
+  background: rgba(15, 23, 42, 0.03);
   border: 1.5px solid var(--input-border);
   color: var(--text);
-  padding: 13px 14px 13px 42px;
-  border-radius: var(--radius-xs);
-  font-size: 14px;
+  padding: 18px 20px 18px 48px;
+  border-radius: var(--radius-sm);
+  font-size: 16px;
   outline: none;
   transition: var(--transition);
   font-family: var(--font);
+}
+[data-theme='dark'] .lt-input {
+  background: rgba(255, 255, 255, 0.03);
 }
 
 .lt-input::placeholder { color: var(--text-dim); }
@@ -252,15 +275,17 @@
   justify-content: space-between;
   background: var(--input-bg);
   border: 1px solid var(--border);
-  padding: 11px 14px;
+  padding: 14px 18px;
   border-radius: var(--radius-xs);
   transition: var(--transition);
-  gap: 10px;
+  gap: 12px;
 }
 
 .lt-item:hover {
   background: var(--surface-hover);
-  border-color: var(--border-hover);
+  border-color: var(--border-strong);
+  transform: translateX(4px);
+  box-shadow: var(--shadow-sm);
 }
 
 .lt-item-enter {
@@ -302,11 +327,11 @@
 .lt-action-btn {
   display: flex;
   align-items: center;
-  gap: 5px;
-  font-size: 12px;
+  gap: 6px;
+  font-size: 13px;
   font-weight: 700;
-  padding: 5px 11px;
-  border-radius: 8px;
+  padding: 8px 14px;
+  border-radius: 10px;
   border: 1.5px solid var(--border);
   background: var(--surface-hover);
   color: var(--text-muted);
