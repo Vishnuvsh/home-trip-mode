@@ -376,7 +376,7 @@ const Dashboard: React.FC = () => {
           
           <button className="add-trip-btn-large" onClick={() => setShowModal(true)}>
             <div className="add-trip-icon"><Plus size={20} /></div>
-            Add a new trip
+            Add a trip
           </button>
         </section>
 
