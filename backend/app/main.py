@@ -108,10 +108,68 @@ def get_laundry_stats(user_id: int, db: Session = Depends(get_db)):
     dirty_count = db.query(models.ClothingItem).filter_by(user_id=user_id, is_clean=False).count()
     return {"clean": clean_count, "dirty": dirty_count}
 
+@app.get("/trips/user/{user_id}", response_model=list[schemas.TripResponse])
+def get_user_trips(user_id: int, db: Session = Depends(get_db)):
+    trips = db.query(models.Trip).filter(models.Trip.user_id == user_id).order_by(models.Trip.trip_date.desc()).all()
+    return trips
+
 @app.get("/trips/{trip_id}/checklist", response_model=list[schemas.ChecklistItemResponse])
 def get_trip_checklist(trip_id: int, db: Session = Depends(get_db)):
     items = db.query(models.ChecklistItem).filter(models.ChecklistItem.trip_id == trip_id).all()
     return items
+
+@app.put("/checklist/{item_id}/toggle", response_model=schemas.ChecklistItemResponse)
+def toggle_checklist_item(item_id: int, db: Session = Depends(get_db)):
+    item = db.query(models.ChecklistItem).filter(models.ChecklistItem.id == item_id).first()
+    if not item:
+        raise HTTPException(status_code=404, detail="Checklist item not found")
+    item.is_completed = not item.is_completed
+    db.commit()
+    db.refresh(item)
+    return item
+
+@app.get("/clothing/user/{user_id}", response_model=list[schemas.ClothingItemResponse])
+def get_user_clothing(user_id: int, db: Session = Depends(get_db)):
+    items = db.query(models.ClothingItem).filter(models.ClothingItem.user_id == user_id).all()
+    return items
+
+@app.post("/clothing/user/{user_id}", response_model=schemas.ClothingItemResponse)
+def add_clothing_item(user_id: int, item: schemas.ClothingItemCreate, db: Session = Depends(get_db)):
+    db_item = models.ClothingItem(user_id=user_id, item_name=item.item_name, is_clean=item.is_clean)
+    db.add(db_item)
+    db.commit()
+    db.refresh(db_item)
+    return db_item
+
+@app.put("/clothing/{item_id}/toggle", response_model=schemas.ClothingItemResponse)
+def toggle_clothing_item(item_id: int, db: Session = Depends(get_db)):
+    item = db.query(models.ClothingItem).filter(models.ClothingItem.id == item_id).first()
+    if not item:
+        raise HTTPException(status_code=404, detail="Clothing item not found")
+    item.is_clean = not item.is_clean
+    db.commit()
+    db.refresh(item)
+    return item
+
+@app.delete("/clothing/{item_id}")
+def delete_clothing_item(item_id: int, db: Session = Depends(get_db)):
+    item = db.query(models.ClothingItem).filter(models.ClothingItem.id == item_id).first()
+    if not item:
+        raise HTTPException(status_code=404, detail="Clothing item not found")
+    db.delete(item)
+    db.commit()
+    return {"message": "Item deleted successfully"}
+
+@app.delete("/trips/{trip_id}")
+def delete_trip(trip_id: int, db: Session = Depends(get_db)):
+    trip = db.query(models.Trip).filter(models.Trip.id == trip_id).first()
+    if not trip:
+        raise HTTPException(status_code=404, detail="Trip not found")
+    # Delete associated checklist items first
+    db.query(models.ChecklistItem).filter(models.ChecklistItem.trip_id == trip_id).delete()
+    db.delete(trip)
+    db.commit()
+    return {"message": "Trip deleted successfully"}
 
 # ═══════════════════════════════════════════════════════════════
 # ⚡ AI Smart Quick-Add Engine (Natural Language Input)

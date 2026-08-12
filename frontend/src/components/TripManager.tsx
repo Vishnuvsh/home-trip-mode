@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { CheckCircle2, Package, AlertCircle, Check, Loader2, Sparkles } from 'lucide-react';
+import { CheckCircle2, Package, AlertCircle, Check, Loader2, Sparkles, Navigation } from 'lucide-react';
 import axios from 'axios';
 import './TripManager.css';
 
@@ -79,16 +79,12 @@ const TripManager: React.FC = () => {
     setAiResult(null);
 
     try {
-      await axios.post('http://localhost:8001/trips/?user_id=1', { trip_type: tripType });
+      const res = await axios.post('http://localhost:8001/trips/?user_id=1', { trip_type: tripType });
+      const newTripId = res.data.id;
 
-      setChecklist([
-        { id: 1, category: 'Electronics',       item_name: 'Phone Charger', is_completed: false },
-        { id: 2, category: 'Essentials',         item_name: 'Toothbrush',   is_completed: false },
-        { id: 3, category: 'Essentials',         item_name: 'Wallet / ID',  is_completed: false },
-        ...(tripType === 'Going Home'
-          ? [{ id: 4, category: 'Clothes (Laundry)', item_name: 'Dirty Jeans', is_completed: false }]
-          : []),
-      ]);
+      // Fetch the actual generated checklist from the DB
+      const checklistRes = await axios.get(`http://localhost:8001/trips/${newTripId}/checklist`);
+      setChecklist(checklistRes.data);
       setSuccess(true);
     } catch {
       setError('Could not reach the backend. Make sure the server is running.');
@@ -119,7 +115,6 @@ const TripManager: React.FC = () => {
         created_at: now
       });
 
-      // The backend now returns checklist directly!
       if (response.data.checklist) {
         setChecklist(response.data.checklist);
       }
@@ -132,62 +127,74 @@ const TripManager: React.FC = () => {
     }
   };
 
-  const toggleItem = (itemId: number) => {
+  const toggleItem = async (itemId: number) => {
+    // Optimistic update
     setChecklist(prev =>
       prev.map(item => item.id === itemId ? { ...item, is_completed: !item.is_completed } : item)
     );
+    try {
+      await axios.put(`http://localhost:8001/checklist/${itemId}/toggle`);
+    } catch {
+      // Rollback on failure
+      setChecklist(prev =>
+        prev.map(item => item.id === itemId ? { ...item, is_completed: !item.is_completed } : item)
+      );
+    }
   };
 
   const completedCount = checklist.filter(i => i.is_completed).length;
   const progress = checklist.length === 0 ? 0 : Math.round((completedCount / checklist.length) * 100);
 
   return (
-    <div className="page-container">
+    <div className="tm-page-wrap">
+      {/* Dynamic Background Elements */}
+      <div className="tm-bg-mesh" />
       <div className="bg-orb bg-orb-1" />
       <div className="bg-orb bg-orb-2" />
+      <div className="bg-orb bg-orb-3" style={{ opacity: 0.15, width: '400px', height: '400px', background: 'radial-gradient(circle, var(--amber-light) 0%, transparent 60%)', top: '10%', right: '-100px', animationDelay: '-4s' }} />
 
       <div className="tm-container">
 
-        {/* Header */}
-        <div className="tm-header">
-          <div className="tm-header-icon"><Sparkles size={22} /></div>
-          <div>
-            <h1 className="tm-title">Trip Planner</h1>
-            <p className="tm-subtitle">Generate your smart packing checklist instantly.</p>
+        {/* ── Header ── */}
+        <div className="tm-header-section">
+          <div className="tm-header-icon">
+            <Navigation size={24} />
           </div>
+          <h1 className="tm-main-title">Trip<span className="text-gradient">Planner</span></h1>
+          <p className="tm-main-subtitle">Generate your smart packing checklist instantly.</p>
         </div>
 
-        {/* Alerts */}
+        {/* ── Alerts ── */}
         {error && (
-          <div className="alert alert-danger">
+          <div className="alert alert-danger" style={{ maxWidth: '800px', margin: '0 auto 24px' }}>
             <AlertCircle size={18} />
             {error}
           </div>
         )}
         {success && !aiResult && (
-          <div className="alert alert-success">
+          <div className="alert alert-success" style={{ maxWidth: '800px', margin: '0 auto 24px' }}>
             <Check size={18} />
             Trip created! Your personalised checklist is below.
           </div>
         )}
         {aiResult && (
-          <div className="alert alert-success" style={{ background: 'rgba(16, 185, 129, 0.15)', borderColor: '#10b981', color: '#10b981', display: 'flex', flexDirection: 'column', gap: '12px' }}>
+          <div className="alert alert-success" style={{ maxWidth: '800px', margin: '0 auto 24px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
             <div style={{ display: 'flex', alignItems: 'flex-start', gap: '8px' }}>
               <Sparkles size={18} style={{ marginTop: '2px', flexShrink: 0 }} />
               <span>{aiResult.ai_summary}</span>
             </div>
             
-            <div style={{ padding: '12px', background: 'var(--bg)', borderRadius: '8px', border: '1px solid rgba(16, 185, 129, 0.3)', display: 'flex', gap: '16px', flexWrap: 'wrap' }}>
+            <div style={{ padding: '12px', background: 'var(--surface)', borderRadius: '12px', border: '1px solid rgba(16, 208, 122, 0.3)', display: 'flex', gap: '16px', flexWrap: 'wrap' }}>
                <div style={{ flex: 1, minWidth: '150px' }}>
-                 <p style={{ margin: 0, fontSize: '0.8rem', color: 'var(--text-dim)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>📅 Travel Date & Day</p>
-                 <p style={{ margin: '4px 0 0', fontWeight: 600, fontSize: '1rem', color: 'var(--text)' }}>
+                 <p style={{ margin: 0, fontSize: '12px', color: 'var(--text-dim)', textTransform: 'uppercase', letterSpacing: '0.05em', fontWeight: 700 }}>📅 Travel Date</p>
+                 <p style={{ margin: '4px 0 0', fontWeight: 800, fontSize: '15px', color: 'var(--text)' }}>
                     {aiResult.detected_date_str}
                  </p>
                </div>
                
                <div style={{ flex: 1, minWidth: '150px' }}>
-                 <p style={{ margin: 0, fontSize: '0.8rem', color: 'var(--text-dim)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>🕒 Created On</p>
-                 <p style={{ margin: '4px 0 0', fontWeight: 600, fontSize: '1rem', color: 'var(--text)' }}>
+                 <p style={{ margin: 0, fontSize: '12px', color: 'var(--text-dim)', textTransform: 'uppercase', letterSpacing: '0.05em', fontWeight: 700 }}>🕒 Created On</p>
+                 <p style={{ margin: '4px 0 0', fontWeight: 800, fontSize: '15px', color: 'var(--text)' }}>
                     {aiResult.created_at}
                  </p>
                </div>
@@ -195,18 +202,15 @@ const TripManager: React.FC = () => {
           </div>
         )}
 
-        {/* AI Smart Assistant Card */}
-        <div className="card tm-ai-card">
-          <div className="tm-card-eyebrow" style={{ color: '#8b5cf6' }}>✨ AI Smart Packing Assistant (Best! ⭐)</div>
+        {/* ── AI Smart Assistant Card ── */}
+        <div className="tm-glass-card tm-ai-card">
+          <span className="tm-card-eyebrow" style={{ color: 'var(--accent)' }}>✨ AI Smart Packing Assistant (Best! ⭐)</span>
           <h2 className="tm-card-title">Describe your trip details</h2>
-          <p style={{ color: 'var(--text-dim)', fontSize: '0.9rem', marginBottom: '1rem' }}>
-            e.g. Going home for 4 days, rainy weather
-          </p>
 
           <form onSubmit={handleAIAssistant}>
             <textarea
               className="tm-ai-input"
-              placeholder="Enter your trip plans here..."
+              placeholder="e.g. Going home for 4 days, rainy weather..."
               value={prompt}
               onChange={e => setPrompt(e.target.value)}
               rows={3}
@@ -214,8 +218,7 @@ const TripManager: React.FC = () => {
             <button
               type="submit"
               disabled={isLoading || !prompt.trim()}
-              className="btn tm-btn-ai"
-              style={{ width: '100%' }}
+              className="tm-btn-ai"
             >
               {isLoading ? (
                 <><Loader2 size={18} className="tm-spinner" /> Generating Custom Checklist…</>
@@ -226,9 +229,9 @@ const TripManager: React.FC = () => {
           </form>
         </div>
 
-        {/* Trip Selection Card */}
-        <div className="card">
-          <div className="tm-card-eyebrow">Step 1</div>
+        {/* ── Trip Selection Card ── */}
+        <div className="tm-glass-card" style={{ animationDelay: '0.2s' }}>
+          <span className="tm-card-eyebrow">Step 1</span>
           <h2 className="tm-card-title">Where are you heading?</h2>
 
           <form onSubmit={handleCreateTrip}>
@@ -257,8 +260,7 @@ const TripManager: React.FC = () => {
             <button
               type="submit"
               disabled={isLoading}
-              className="btn"
-              id="generate-checklist-btn"
+              className="tm-btn-primary"
             >
               {isLoading ? (
                 <><Loader2 size={18} className="tm-spinner" /> Generating…</>
@@ -269,13 +271,14 @@ const TripManager: React.FC = () => {
           </form>
         </div>
 
-        {/* Checklist Card */}
+        {/* ── Checklist Card ── */}
         {checklist.length > 0 && (
-          <div className="card tm-checklist-card">
-            <div className="tm-card-eyebrow">Step 2</div>
+          <div className="tm-glass-card" style={{ animationDelay: '0.3s' }}>
+            <span className="tm-card-eyebrow">Step 2</span>
+            
             <div className="tm-checklist-header">
               <h2 className="tm-card-title" style={{ margin: 0 }}>
-                <CheckCircle2 size={22} className="tm-icon-green" /> Packing Checklist
+                <CheckCircle2 size={24} className="tm-icon-green" /> Packing Checklist
               </h2>
               <span className="tm-progress-label">{completedCount}/{checklist.length}</span>
             </div>
@@ -293,13 +296,13 @@ const TripManager: React.FC = () => {
                     key={item.id}
                     className={`tm-checklist-item ${item.is_completed ? 'completed' : ''}`}
                     onClick={() => toggleItem(item.id)}
-                    style={{ animationDelay: `${idx * 60}ms` }}
+                    style={{ animationDelay: `${idx * 0.05 + 0.4}s` }}
                     role="button"
                     tabIndex={0}
                     onKeyDown={e => e.key === 'Enter' && toggleItem(item.id)}
                   >
                     <div className={`tm-check-box ${item.is_completed ? 'checked' : ''}`}>
-                      {item.is_completed && <Check size={14} strokeWidth={3} />}
+                      {item.is_completed && <Check size={16} strokeWidth={3} />}
                     </div>
                     <div className="tm-item-body">
                       <p className="tm-item-name">{item.item_name}</p>

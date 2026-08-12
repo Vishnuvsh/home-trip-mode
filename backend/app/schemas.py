@@ -59,6 +59,14 @@ class ClothingItemBase(BaseModel):
     item_name: str
     is_clean: bool = True
 
+class ClothingItemCreate(ClothingItemBase):
+    pass
+
+class ClothingItemResponse(ClothingItemBase):
+    id: int
+    user_id: int
+    model_config = {"from_attributes": True}
+
 # --- AI Smart Quick-Add Schemas ---
 
 class AIQuickAddRequest(BaseModel):

@@ -1,6 +1,10 @@
-import React, { useState } from 'react';
-import { Shirt, Plus, CheckCircle2, AlertCircle, Sparkles, Droplets, Wind } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Shirt, Plus, CheckCircle2, AlertCircle, Sparkles, Droplets, Wind, Loader2 } from 'lucide-react';
+import axios from 'axios';
 import './LaundryTracker.css';
+
+const API = 'http://localhost:8001';
+const USER_ID = 1;
 
 interface ClothingItem {
   id: number;
@@ -9,35 +13,74 @@ interface ClothingItem {
 }
 
 const LaundryTracker = () => {
-  const [clothes, setClothes] = useState<ClothingItem[]>([
-    { id: 1, item_name: 'Black Hoodie', is_clean: false },
-    { id: 2, item_name: 'Blue Jeans',   is_clean: true  },
-    { id: 3, item_name: 'White T-Shirt',is_clean: false },
-  ]);
+  const [clothes, setClothes] = useState<ClothingItem[]>([]);
   const [newItemName, setNewItemName] = useState<string>('');
-  const [error] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
   const [recentId, setRecentId] = useState<number | null>(null);
 
-  const handleAddItem = (e: React.FormEvent) => {
+  useEffect(() => {
+    const fetchClothes = async () => {
+      setIsLoading(true);
+      try {
+        const res = await axios.get(`${API}/clothing/user/${USER_ID}`);
+        setClothes(res.data);
+      } catch {
+        setError('Could not load wardrobe. Make sure the backend is running.');
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    fetchClothes();
+  }, []);
+
+  const handleAddItem = async (e: React.FormEvent) => {
     e.preventDefault();
     const name = newItemName.trim();
     if (!name) return;
 
-    const newItem: ClothingItem = { id: Date.now(), item_name: name, is_clean: true };
-    setClothes(prev => [newItem, ...prev]);
-    setRecentId(newItem.id);
-    setNewItemName('');
-    setTimeout(() => setRecentId(null), 600);
+    try {
+      const res = await axios.post(`${API}/clothing/user/${USER_ID}`, {
+        item_name: name,
+        is_clean: true,
+      });
+      const newItem: ClothingItem = res.data;
+      setClothes(prev => [newItem, ...prev]);
+      setRecentId(newItem.id);
+      setNewItemName('');
+      setTimeout(() => setRecentId(null), 600);
+    } catch {
+      setError('Could not add item. Please try again.');
+    }
   };
 
-  const toggleStatus = (id: number) => {
+  const toggleStatus = async (id: number) => {
+    // Optimistic update
     setClothes(prev =>
       prev.map(c => c.id === id ? { ...c, is_clean: !c.is_clean } : c)
     );
+    try {
+      await axios.put(`${API}/clothing/${id}/toggle`);
+    } catch {
+      // Rollback on failure
+      setClothes(prev =>
+        prev.map(c => c.id === id ? { ...c, is_clean: !c.is_clean } : c)
+      );
+      setError('Could not update status. Please try again.');
+    }
   };
 
-  const removeItem = (id: number) => {
+  const removeItem = async (id: number) => {
+    // Optimistic update
     setClothes(prev => prev.filter(c => c.id !== id));
+    try {
+      await axios.delete(`${API}/clothing/${id}`);
+    } catch {
+      // Rollback: re-fetch to restore
+      const res = await axios.get(`${API}/clothing/user/${USER_ID}`);
+      setClothes(res.data);
+      setError('Could not delete item. Please try again.');
+    }
   };
 
   const cleanClothes = clothes.filter(c => c.is_clean);
@@ -78,10 +121,12 @@ const LaundryTracker = () => {
             <div className="lt-progress-header">
               <div>
                 <h3 className="lt-card-title">Wardrobe Status</h3>
-                <p className="lt-card-subtitle">{cleanPct}% Clean & Ready</p>
+                <p className="lt-card-subtitle">
+                  {isLoading ? 'Loading...' : `${cleanPct}% Clean & Ready`}
+                </p>
               </div>
               <div className="lt-progress-icon-wrap">
-                <Droplets size={24} />
+                {isLoading ? <Loader2 size={24} className="animate-spin" /> : <Droplets size={24} />}
               </div>
             </div>
             <div className="lt-progress-bar-container">
@@ -144,7 +189,12 @@ const LaundryTracker = () => {
             </div>
 
             <div className="lt-items-container">
-              {dirtyClothes.length === 0 ? (
+              {isLoading ? (
+                <div className="lt-empty-state">
+                  <Loader2 size={24} className="animate-spin" style={{ margin: '0 auto' }} />
+                  <p>Loading...</p>
+                </div>
+              ) : dirtyClothes.length === 0 ? (
                  <div className="lt-empty-state">
                     <div className="lt-empty-icon-wrap">✨</div>
                     <p>Basket is empty. All clean!</p>
@@ -181,7 +231,12 @@ const LaundryTracker = () => {
             </div>
 
             <div className="lt-items-container">
-              {cleanClothes.length === 0 ? (
+              {isLoading ? (
+                <div className="lt-empty-state">
+                  <Loader2 size={24} className="animate-spin" style={{ margin: '0 auto' }} />
+                  <p>Loading...</p>
+                </div>
+              ) : cleanClothes.length === 0 ? (
                  <div className="lt-empty-state">
                     <div className="lt-empty-icon-wrap">🧺</div>
                     <p>Time to do laundry!</p>

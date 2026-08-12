@@ -1,50 +1,382 @@
-.tm-ai-card {
-  box-shadow: 0 24px 48px rgba(139, 92, 246, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+/* ═══════════════════════════════════════════════════════════════
+   TripManager.css — Premium Redesign
+═══════════════════════════════════════════════════════════════ */
+
+.tm-page-wrap {
+  position: relative;
+  overflow: hidden;
+  min-height: 100vh;
 }
 
+.tm-bg-mesh {
+  position: absolute;
+  inset: 0;
+  background-image: 
+    radial-gradient(at 0% 0%, hsla(253,16%,7%,1) 0, transparent 50%), 
+    radial-gradient(at 80% 0%, hsla(225,39%,40%,0.25) 0, transparent 50%), 
+    radial-gradient(at 0% 100%, hsla(339,49%,40%,0.25) 0, transparent 50%);
+  z-index: 0;
+  pointer-events: none;
+  opacity: 0.7;
+  filter: blur(40px);
+}
+[data-theme='light'] .tm-bg-mesh {
+  background-image: 
+    radial-gradient(at 0% 0%, hsla(253,16%,97%,1) 0, transparent 50%), 
+    radial-gradient(at 80% 0%, hsla(225,100%,80%,0.4) 0, transparent 50%), 
+    radial-gradient(at 0% 100%, hsla(339,100%,80%,0.4) 0, transparent 50%);
+}
+
+.tm-container {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 80px 24px 100px;
+  position: relative;
+  z-index: 10;
+}
+
+/* ── Header ── */
+.tm-header-section {
+  text-align: center;
+  margin-bottom: 48px;
+  animation: fade-up 0.6s ease-out both;
+}
+.tm-header-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 56px; height: 56px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  color: var(--accent);
+  margin-bottom: 16px;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.05);
+}
+.tm-main-title {
+  font-size: 48px;
+  font-weight: 900;
+  letter-spacing: -1.5px;
+  color: var(--text);
+  margin: 0 0 12px;
+}
+.tm-main-subtitle {
+  font-size: 18px;
+  color: var(--text-dim);
+  max-width: 500px;
+  margin: 0 auto;
+  line-height: 1.6;
+}
+
+/* ── Glass Cards ── */
+.tm-glass-card {
+  background: linear-gradient(145deg, var(--surface), rgba(255,255,255,0.02));
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1px solid var(--border);
+  border-radius: 32px;
+  padding: 32px;
+  box-shadow: 0 24px 48px rgba(0,0,0,0.04), inset 0 1px 0 rgba(255,255,255,0.05);
+  transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.4s ease;
+  animation: slide-up-fade 0.6s cubic-bezier(0.16, 1, 0.3, 1) both;
+  margin-bottom: 24px;
+}
+.tm-glass-card:hover {
+  box-shadow: 0 32px 64px rgba(0,0,0,0.08), inset 0 1px 0 rgba(255,255,255,0.1);
+  border-color: var(--border-hover);
+}
+
+.tm-card-eyebrow {
+  font-size: 12px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--text-dim);
+  margin-bottom: 12px;
+  display: inline-block;
+}
+.tm-card-title {
+  font-size: 24px;
+  font-weight: 800;
+  margin: 0 0 24px;
+  color: var(--text);
+}
+
+/* ── AI Assistant Card ── */
+.tm-ai-card {
+  position: relative;
+  overflow: hidden;
+}
 .tm-ai-card::before {
   content: '';
   position: absolute;
   top: -50%; left: -50%; width: 200%; height: 200%;
-  background: radial-gradient(circle at 50% 50%, rgba(139, 92, 246, 0.1), transparent 60%);
+  background: radial-gradient(circle at 50% 50%, var(--accent-light), transparent 60%);
   animation: pulse-ring 8s infinite alternate;
   pointer-events: none;
   z-index: 0;
+  opacity: 0.5;
 }
-
 .tm-ai-card > * { position: relative; z-index: 1; }
 
 .tm-ai-input {
   width: 100%;
-  padding: 18px 20px;
-  border-radius: 16px;
-  border: 2px solid rgba(139, 92, 246, 0.3);
-  background: var(--bg);
+  padding: 20px;
+  border-radius: 20px;
+  border: 1px solid var(--input-border);
+  background: var(--input-bg);
   color: var(--text);
-  font-family: inherit;
+  font-family: var(--font);
   font-size: 16px;
   resize: vertical;
-  margin-bottom: 24px;
+  margin-bottom: 16px;
   transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-  box-shadow: inset 0 2px 4px rgba(0,0,0,0.05);
 }
-
 .tm-ai-input:focus {
   outline: none;
-  border-color: #8b5cf6;
-  box-shadow: 0 0 0 4px rgba(139, 92, 246, 0.15), inset 0 2px 4px rgba(0,0,0,0.05);
+  border-color: var(--accent);
+  background: var(--input-focus-bg);
+  box-shadow: 0 0 0 4px var(--accent-light);
   transform: translateY(-2px);
 }
+.tm-ai-input::placeholder { color: var(--text-dim); }
 
 .tm-btn-ai {
-  background: linear-gradient(135deg, #a855f7, #6366f1);
-  box-shadow: 0 12px 24px rgba(168, 85, 247, 0.3), inset 0 2px 4px rgba(255, 255, 255, 0.3);
+  background: linear-gradient(135deg, var(--accent), var(--indigo));
+  color: white;
+  border: none;
+  padding: 16px;
+  border-radius: 16px;
+  font-size: 16px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 8px 24px rgba(99, 102, 241, 0.25);
+  font-family: var(--font);
+  width: 100%;
 }
 .tm-btn-ai:hover:not(:disabled) {
-  box-shadow: 0 20px 40px rgba(168, 85, 247, 0.4), inset 0 2px 4px rgba(255, 255, 255, 0.4);
+  transform: translateY(-2px);
+  box-shadow: 0 12px 32px rgba(99, 102, 241, 0.35);
+}
+.tm-btn-ai:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  filter: grayscale(0.5);
 }
 
-/* ── All Done Banner ── */
+.tm-spinner {
+  animation: spin 1s linear infinite;
+}
+@keyframes spin { 100% { transform: rotate(360deg); } }
+
+/* ── Trip Options Selection ── */
+.tm-options-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+@media (max-width: 640px) { .tm-options-grid { grid-template-columns: 1fr; } }
+
+.tm-option-card {
+  background: var(--input-bg);
+  border: 1px solid var(--input-border);
+  border-radius: 20px;
+  padding: 20px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  text-align: left;
+  position: relative;
+  overflow: hidden;
+}
+.tm-option-card:hover {
+  background: var(--surface-hover);
+  border-color: var(--border-hover);
+  transform: translateY(-4px);
+  box-shadow: 0 8px 24px rgba(0,0,0,0.05);
+}
+
+.tm-option-emoji {
+  width: 48px; height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  background: rgba(0,0,0,0.05);
+  border-radius: 16px;
+  flex-shrink: 0;
+}
+[data-theme='dark'] .tm-option-emoji { background: rgba(255,255,255,0.05); }
+
+.tm-option-body { flex: 1; }
+.tm-option-title { margin: 0 0 4px; font-size: 16px; font-weight: 700; color: var(--text); }
+.tm-option-desc { margin: 0; font-size: 13px; color: var(--text-muted); }
+
+.tm-option-check {
+  width: 24px; height: 24px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  animation: bounce-in 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+/* Colors for specific options */
+.tm-option-amber.selected {
+  background: var(--amber-light);
+  border-color: var(--amber);
+  box-shadow: 0 8px 24px rgba(245, 158, 11, 0.2);
+}
+.tm-option-amber.selected .tm-option-check { background: var(--amber); }
+
+.tm-option-indigo.selected {
+  background: var(--indigo-light);
+  border-color: var(--indigo);
+  box-shadow: 0 8px 24px rgba(99, 102, 241, 0.2);
+}
+.tm-option-indigo.selected .tm-option-check { background: var(--indigo); }
+
+
+.tm-btn-primary {
+  background: var(--text);
+  color: var(--bg);
+  border: none;
+  padding: 16px 24px;
+  border-radius: 16px;
+  font-size: 16px;
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-family: var(--font);
+}
+.tm-btn-primary:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(0,0,0,0.1);
+}
+[data-theme='dark'] .tm-btn-primary:hover:not(:disabled) {
+  box-shadow: 0 8px 24px rgba(255,255,255,0.1);
+}
+.tm-btn-primary:disabled { opacity: 0.6; cursor: not-allowed; }
+
+/* ── Checklist ── */
+.tm-checklist-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+}
+.tm-icon-green { color: var(--green); margin-right: 8px; vertical-align: text-bottom; }
+.tm-progress-label {
+  font-size: 16px;
+  font-weight: 800;
+  color: var(--text-dim);
+  background: var(--input-bg);
+  padding: 6px 12px;
+  border-radius: 99px;
+}
+
+.tm-progress-track {
+  height: 8px;
+  background: var(--input-bg);
+  border-radius: 99px;
+  overflow: hidden;
+  margin-bottom: 24px;
+  box-shadow: inset 0 2px 4px rgba(0,0,0,0.05);
+}
+.tm-progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--green), #34d399);
+  border-radius: 99px;
+  transition: width 1s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: 0 0 12px var(--green-glow);
+}
+
+.tm-checklist-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.tm-checklist-item {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 16px 20px;
+  background: var(--input-bg);
+  border: 1px solid transparent;
+  border-radius: 20px;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  animation: slide-up-fade 0.4s ease-out both;
+}
+.tm-checklist-item:hover {
+  background: var(--surface-hover);
+  border-color: var(--border);
+  transform: translateX(4px);
+  box-shadow: 0 8px 24px rgba(0,0,0,0.04);
+}
+.tm-checklist-item.completed {
+  background: transparent;
+  border: 1px dashed var(--border-strong);
+  opacity: 0.6;
+}
+.tm-checklist-item.completed:hover {
+  opacity: 1;
+}
+
+.tm-check-box {
+  width: 28px; height: 28px;
+  border-radius: 8px;
+  border: 2px solid var(--text-dim);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+.tm-checklist-item:hover .tm-check-box:not(.checked) {
+  border-color: var(--text);
+}
+.tm-check-box.checked {
+  background: var(--green);
+  border-color: var(--green);
+  box-shadow: 0 4px 12px var(--green-glow);
+  transform: scale(1.1);
+}
+
+.tm-item-body {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+@media (max-width: 480px) {
+  .tm-item-body { flex-direction: column; align-items: flex-start; gap: 4px; }
+}
+
+.tm-item-name {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text);
+  margin: 0;
+  transition: color 0.3s;
+}
+.tm-checklist-item.completed .tm-item-name {
+  text-decoration: line-through;
+  color: var(--text-dim);
+}
+
 .tm-all-done {
   display: flex;
   align-items: center;
@@ -52,29 +384,12 @@
   gap: 12px;
   margin-top: 32px;
   padding: 24px;
-  border-radius: 16px;
-  background: linear-gradient(135deg, rgba(16, 208, 122, 0.1), rgba(52, 211, 153, 0.1));
+  border-radius: 20px;
+  background: var(--green-light);
   border: 1px solid rgba(16, 208, 122, 0.3);
-  color: #10b981;
+  color: var(--green);
   font-size: 18px;
   font-weight: 800;
   box-shadow: 0 12px 24px rgba(16, 208, 122, 0.15);
-  animation: slide-up-fade 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) both;
-}
-
-/* ── Responsive ── */
-@media (max-width: 768px) {
-  .tm-page { padding: 0 16px 60px; }
-  .tm-container { padding: 40px 10px 0; }
-  .tm-header { flex-direction: column; align-items: flex-start; gap: 16px; }
-  .tm-title { font-size: 32px; }
-  .tm-card { padding: 24px; border-radius: 20px; }
-  .tm-options-grid { grid-template-columns: 1fr; }
-  .tm-btn { padding: 16px; font-size: 15px; }
-  .tm-checklist-item { padding: 16px; }
-}
-
-@keyframes slide-up-fade {
-  from { opacity: 0; transform: translateY(30px) scale(0.98); filter: blur(4px); }
-  to { opacity: 1; transform: translateY(0) scale(1); filter: blur(0); }
+  animation: bounce-in 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275) both;
 }
