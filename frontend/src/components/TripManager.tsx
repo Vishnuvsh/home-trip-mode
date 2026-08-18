@@ -267,7 +267,7 @@ const TripManager: React.FC = () => {
               {isLoading ? (
                 <><Loader2 size={18} className="tm-spinner" /> Generating…</>
               ) : (
-                <><Package size={18} /> Generate Checklist</>
+                <><Package size={18} /> Create and Generate Checklist</>
               )}
             </button>
           </form>
