@@ -43,6 +43,7 @@ const formatDate = (dateStr: string) => {
    ADD TRIP MODAL
 ════════════════════════════════════════ */
 const AddTripModal = ({ onClose, onAdd }: { onClose: () => void, onAdd: () => void }) => {
+  const { userId } = useAuth();
   const [form, setForm] = useState({ type: 'Going Home', date: '', status: 'Pending' });
   const [error, setError] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
