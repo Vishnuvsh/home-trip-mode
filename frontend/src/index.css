@@ -4,7 +4,7 @@
 ═══════════════════════════════════════════════════════════════ */
 
 /* ── Google Fonts ─────────────────────────────────────────────── */
-@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&family=Inter:wght@300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&family=Inter:wght@300;400;500;600;700&display=swap');
 
 /* ── LIGHT THEME (default :root) ─────────────────────────────── */
 :root {
@@ -78,7 +78,7 @@
   --radius: 20px;
   --radius-sm: 14px;
   --radius-xs: 10px;
-  --font: 'Plus Jakarta Sans', 'Inter', system-ui, sans-serif;
+  --font: 'Outfit', 'Plus Jakarta Sans', 'Inter', system-ui, sans-serif;
   --transition: all 0.3s cubic-bezier(0.22, 1, 0.36, 1);
   --transition-fast: all 0.18s cubic-bezier(0.22, 1, 0.36, 1);
   --transition-spring: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
