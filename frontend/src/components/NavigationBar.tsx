@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { Backpack, LayoutDashboard, Navigation, Shirt, Sun, Moon, LogOut, User } from 'lucide-react';
+import { Backpack, LayoutDashboard, Navigation, Shirt, Sun, Moon, Power, User } from 'lucide-react';
 import { useTheme } from '../context/ThemeContext';
 import { useAuth } from '../context/AuthContext';
 import './NavigationBar.css';
@@ -31,9 +31,9 @@ const NavigationBar = () => {
   });
 
   const links = [
-    { to: '/',                label: 'Dashboard',  Icon: LayoutDashboard },
-    { to: '/trip-manager',    label: 'Plan Trip',  Icon: Navigation },
-    { to: '/laundry-tracker', label: 'Laundry',    Icon: Shirt },
+    { to: '/', label: 'Dashboard', Icon: LayoutDashboard },
+    { to: '/trip-manager', label: 'Plan Trip', Icon: Navigation },
+    { to: '/laundry-tracker', label: 'Laundry', Icon: Shirt },
   ];
 
   const handleLogout = () => {
@@ -83,7 +83,9 @@ const NavigationBar = () => {
           {/* User chip */}
           {username && (
             <div className="navbar-user-chip">
-              <User size={13} />
+              <div className="user-avatar-placeholder">
+                <User size={14} strokeWidth={2.5} />
+              </div>
               <span>{username}</span>
             </div>
           )}
@@ -107,7 +109,7 @@ const NavigationBar = () => {
             title="Logout"
             id="navbar-logout-btn"
           >
-            <LogOut size={15} />
+            <Power size={16} strokeWidth={2.5} className="logout-icon" />
             <span>Logout</span>
           </button>
         </div>

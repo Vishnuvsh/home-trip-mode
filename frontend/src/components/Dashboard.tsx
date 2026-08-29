@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import {
   Shirt, Calendar, Plus, X, Bot, Mic, Loader2, Sparkles, Check, Home, Building, Plane, Trash2, Droplets, Wind
 } from 'lucide-react';
-import axios from 'axios';
+import api from '../api/axios';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import './Dashboard.css';
@@ -17,9 +17,9 @@ interface Trip {
 
 /* ── Constants ── */
 const TRIP_TYPES = [
-  { value: 'Going Home',      label: 'Going Home',       icon: <Home size={18} /> },
-  { value: 'Returning to PG', label: 'Returning to PG',  icon: <Building size={18} /> },
-  { value: 'Weekend Trip',    label: 'Weekend Trip',     icon: <Plane size={18} /> },
+  { value: 'Going Home', label: 'Going Home', icon: <Home size={18} /> },
+  { value: 'Returning to PG', label: 'Returning to PG', icon: <Building size={18} /> },
+  { value: 'Weekend Trip', label: 'Weekend Trip', icon: <Plane size={18} /> },
 ];
 
 const STATUS_OPTIONS = ['Pending', 'Planned', 'Completed', 'Cancelled'];
@@ -57,7 +57,7 @@ const AddTripModal = ({ onClose, onAdd }: { onClose: () => void, onAdd: () => vo
     if (!form.date) { setError('Please pick a travel date.'); return; }
     setIsSubmitting(true);
     try {
-      await axios.post(`http://localhost:8001/trips/?user_id=${userId}`, {
+      await api.post(`/trips/?user_id=${userId}`, {
         trip_type: form.type,
         trip_date: form.date,
         status: form.status,
@@ -153,7 +153,7 @@ const Dashboard: React.FC = () => {
 
   const fetchStats = async () => {
     try {
-      const res = await axios.get(`http://localhost:8001/laundry/stats/${userId}`);
+      const res = await api.get(`/laundry/stats/${userId}`);
       setLaundryStats(res.data);
     } catch {
       // Handle silently
@@ -162,7 +162,7 @@ const Dashboard: React.FC = () => {
 
   const fetchTrips = async () => {
     try {
-      const res = await axios.get(`http://localhost:8001/trips/user/${userId}`);
+      const res = await api.get(`/trips/user/${userId}`);
       setTrips(res.data);
     } catch (err) {
     } finally {
@@ -205,10 +205,10 @@ const Dashboard: React.FC = () => {
   const handleAISubmit = async (e?: React.FormEvent) => {
     if (e) e.preventDefault();
     if (!aiPrompt.trim()) return;
-    
+
     setIsAiLoading(true);
     try {
-      await axios.post('http://localhost:8001/ai/quick-add', { prompt: aiPrompt, user_id: userId });
+      await api.post('/ai/quick-add', { prompt: aiPrompt, user_id: userId });
       await fetchTrips();
       await fetchStats();
       setAiPrompt('');
@@ -222,7 +222,7 @@ const Dashboard: React.FC = () => {
   const handleDeleteTrip = async (e: React.MouseEvent, tripId: number) => {
     e.stopPropagation();
     try {
-      await axios.delete(`http://localhost:8001/trips/${tripId}`);
+      await api.delete(`/trips/${tripId}`);
       setTrips(prev => prev.filter(t => t.id !== tripId));
       fetchStats();
     } catch (err) {
@@ -247,7 +247,7 @@ const Dashboard: React.FC = () => {
           </div>
           <h1 className="db-main-title">{greeting} {greetEmoji}</h1>
           <p className="db-main-subtitle">
-            <Sparkles size={16} style={{ color: 'var(--accent)', display: 'inline', marginRight: 4 }} /> 
+            <Sparkles size={16} style={{ color: 'var(--accent)', display: 'inline', marginRight: 4 }} />
             Here's what's happening with your hostel essentials.
           </p>
         </div>
@@ -255,9 +255,9 @@ const Dashboard: React.FC = () => {
         <section className="db-ai-section">
           <form className="db-ai-input-bar" onSubmit={handleAISubmit}>
             <Bot size={20} color="var(--accent)" />
-            <input 
-              type="text" 
-              className="db-ai-input" 
+            <input
+              type="text"
+              className="db-ai-input"
               placeholder='Try "Going home this weekend, remind me to pack laptop"'
               value={aiPrompt}
               onChange={e => setAiPrompt(e.target.value)}
@@ -290,7 +290,7 @@ const Dashboard: React.FC = () => {
                 </div>
                 <div className="db-action-arrow">→</div>
               </div>
-              
+
               <div className="db-action-card" onClick={() => setShowModal(true)}>
                 <div className="db-action-emoji" style={{ color: 'var(--indigo)' }}>🏢</div>
                 <div className="db-action-info">
@@ -327,7 +327,7 @@ const Dashboard: React.FC = () => {
                 <p className="db-stat-lbl">Total</p>
               </div>
             </div>
-            
+
             <div className="db-progress-group">
               <div className="db-progress-label clean">
                 <span><Droplets size={14} style={{ display: 'inline', marginRight: 4, verticalAlign: 'text-bottom' }} /> Clean & Ready</span>
@@ -361,7 +361,7 @@ const Dashboard: React.FC = () => {
             </div>
             <span className="db-badge db-badge-planned">{trips.length} active</span>
           </div>
-          
+
           {tripsLoading ? (
             <div className="db-empty-state">
               <div className="db-empty-icon">⏳</div>
@@ -379,22 +379,22 @@ const Dashboard: React.FC = () => {
                 const tripTypeLabel = trip.trip_type;
                 const tripIcon = tripTypeLabel.includes('Home') ? '🏠' : tripTypeLabel.includes('PG') || tripTypeLabel.includes('Return') ? '🏢' : '✈️';
                 return (
-                <div key={trip.id} className="db-trip-item" onClick={() => navigate(`/trip-manager?trip_id=${trip.id}`)}>
-                  <div className="db-trip-emoji">{tripIcon}</div>
-                  <div className="db-trip-info">
-                    <h3 className="db-trip-title">{tripTypeLabel}</h3>
-                    <p className="db-trip-date"><Calendar size={12} /> {formatDate(trip.trip_date)}</p>
+                  <div key={trip.id} className="db-trip-item" onClick={() => navigate(`/trip-manager?trip_id=${trip.id}`)}>
+                    <div className="db-trip-emoji">{tripIcon}</div>
+                    <div className="db-trip-info">
+                      <h3 className="db-trip-title">{tripTypeLabel}</h3>
+                      <p className="db-trip-date"><Calendar size={12} /> {formatDate(trip.trip_date)}</p>
+                    </div>
+                    <span className={`db-badge db-badge-${trip.status.toLowerCase()}`}>{trip.status}</span>
+                    <button className="db-action-btn-delete" onClick={(e) => handleDeleteTrip(e, trip.id)} title="Delete trip">
+                      <Trash2 size={16} />
+                    </button>
                   </div>
-                  <span className={`db-badge db-badge-${trip.status.toLowerCase()}`}>{trip.status}</span>
-                  <button className="db-action-btn-delete" onClick={(e) => handleDeleteTrip(e, trip.id)} title="Delete trip">
-                    <Trash2 size={16} />
-                  </button>
-                </div>
                 );
               })}
             </div>
           )}
-          
+
           <button className="db-add-trip-btn" onClick={() => setShowModal(true)}>
             <div className="db-add-trip-icon"><Plus size={20} /></div>
             <span>Plan a new trip</span>

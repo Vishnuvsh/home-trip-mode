@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { CheckCircle2, Package, AlertCircle, Check, Loader2, Sparkles, Navigation } from 'lucide-react';
-import axios from 'axios';
+import api from '../api/axios';
 import { useAuth } from '../context/AuthContext';
 import './TripManager.css';
 
@@ -61,7 +61,7 @@ const TripManager: React.FC = () => {
       const fetchChecklist = async () => {
         setIsLoading(true);
         try {
-          const response = await axios.get(`http://localhost:8001/trips/${tripIdStr}/checklist`);
+          const response = await api.get(`/trips/${tripIdStr}/checklist`);
           setChecklist(response.data);
         } catch (err) {
           setError('Could not load the selected trip.');
@@ -81,11 +81,11 @@ const TripManager: React.FC = () => {
     setAiResult(null);
 
     try {
-      const res = await axios.post(`http://localhost:8001/trips/?user_id=${userId}`, { trip_type: tripType });
+      const res = await api.post(`/trips/?user_id=${userId}`, { trip_type: tripType });
       const newTripId = res.data.id;
 
       // Fetch the actual generated checklist from the DB
-      const checklistRes = await axios.get(`http://localhost:8001/trips/${newTripId}/checklist`);
+      const checklistRes = await api.get(`/trips/${newTripId}/checklist`);
       setChecklist(checklistRes.data);
       setSuccess(true);
     } catch {
@@ -105,7 +105,7 @@ const TripManager: React.FC = () => {
     setAiResult(null);
 
     try {
-      const response = await axios.post('http://localhost:8001/ai/quick-add', { 
+      const response = await api.post('/ai/quick-add', { 
         prompt: prompt,
         user_id: userId 
       });
@@ -135,7 +135,7 @@ const TripManager: React.FC = () => {
       prev.map(item => item.id === itemId ? { ...item, is_completed: !item.is_completed } : item)
     );
     try {
-      await axios.put(`http://localhost:8001/checklist/${itemId}/toggle`);
+      await api.put(`/checklist/${itemId}/toggle`);
     } catch {
       // Rollback on failure
       setChecklist(prev =>

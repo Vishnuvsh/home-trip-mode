@@ -1,7 +1,5 @@
 import React, { createContext, useContext, useState, useCallback } from 'react';
-import axios from 'axios';
-
-const API = 'http://localhost:8001';
+import api from '../api/axios';
 
 interface AuthState {
   token: string | null;
@@ -54,7 +52,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const login = useCallback(async (username: string, password: string) => {
-    const res = await axios.post(`${API}/auth/login`, { username, password });
+    const res = await api.post(`/auth/login`, { username, password });
     const { access_token } = res.data;
 
     // Decode JWT to get user_id (payload is base64 encoded, middle part)
@@ -65,11 +63,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, []);
 
   const register = useCallback(async (username: string, password: string) => {
-    const res = await axios.post(`${API}/auth/register`, { username, password });
+    const res = await api.post(`/auth/register`, { username, password });
     const newUserId: number = res.data.id;
 
     // Auto-login after register
-    const loginRes = await axios.post(`${API}/auth/login`, { username, password });
+    const loginRes = await api.post(`/auth/login`, { username, password });
     persistAuth(loginRes.data.access_token, newUserId, username);
   }, []);
 
