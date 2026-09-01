@@ -8,8 +8,8 @@
 
 /* ── LIGHT THEME (default :root) ─────────────────────────────── */
 :root {
-  /* Backgrounds — Pista Green */
-  --bg: #FF1D58;
+  /* Backgrounds — Deep Purple */
+  --bg: #2e1065;
   --bg-secondary: #e8f8ec;
   --surface: rgba(255, 255, 255, 0.92);
   --surface-hover: rgba(255, 255, 255, 0.98);
@@ -87,7 +87,7 @@
 
 /* ── DARK THEME (Pista Dark Green) ────────────────────────────── */
 [data-theme='dark'] {
-  --bg: #FF1D58;
+  --bg: #2e1065;
   --bg-secondary: #133020;
   --surface: rgba(255, 255, 255, 0.05);
   --surface-hover: rgba(255, 255, 255, 0.08);
