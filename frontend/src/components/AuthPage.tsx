@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { User, Lock, Backpack, Loader2, AlertCircle, CheckCircle2, ArrowRight } from 'lucide-react';
+import { User, Lock, Backpack, Loader2, AlertCircle, CheckCircle2, ArrowRight, Sparkles } from 'lucide-react';
+import api from '../api/axios';
 import { useAuth } from '../context/AuthContext';
 import './AuthPage.css';
 
@@ -8,7 +9,7 @@ type Tab = 'login' | 'register';
 
 const AuthPage: React.FC = () => {
   const navigate = useNavigate();
-  const { login, register } = useAuth();
+  const { persistAuth } = useAuth();
 
   const [tab, setTab] = useState<Tab>('login');
   const [username, setUsername] = useState('');
@@ -17,6 +18,12 @@ const AuthPage: React.FC = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
+
+  // Post-login animation states
+  const [isAnimating, setIsAnimating] = useState(false);
+  const [animStage, setAnimStage] = useState<number>(0); // 0: verified, 1: syncing, 2: ready, 3: exiting
+  const [animUser, setAnimUser] = useState('');
+  const [isRegisterSuccess, setIsRegisterSuccess] = useState(false);
 
   const resetForm = () => {
     setUsername('');
@@ -54,15 +61,42 @@ const AuthPage: React.FC = () => {
 
     setIsLoading(true);
     try {
+      let token = '';
+      let uid = 0;
+      const cleanUser = username.trim();
+
       if (tab === 'login') {
-        await login(username.trim(), password);
+        const res = await api.post(`/auth/login`, { username: cleanUser, password });
+        token = res.data.access_token;
+        const payload = JSON.parse(atob(token.split('.')[1]));
+        uid = payload.user_id;
       } else {
-        await register(username.trim(), password);
-        setSuccess('Account created! Logging you in…');
-        await new Promise(r => setTimeout(r, 800));
+        const res = await api.post(`/auth/register`, { username: cleanUser, password });
+        uid = res.data.id;
+        const loginRes = await api.post(`/auth/login`, { username: cleanUser, password });
+        token = loginRes.data.access_token;
       }
-      navigate('/');
+
+      // Successful authentication! Trigger the transition animation sequence
+      setIsLoading(false);
+      setAnimUser(cleanUser);
+      setIsRegisterSuccess(tab === 'register');
+      setIsAnimating(true);
+      setAnimStage(0);
+
+      // Smooth staged animation timeline
+      setTimeout(() => setAnimStage(1), 550);
+      setTimeout(() => setAnimStage(2), 1150);
+      setTimeout(() => setAnimStage(3), 1600); // Trigger exit fade/zoom
+
+      // Complete transition into Dashboard
+      setTimeout(() => {
+        persistAuth(token, uid, cleanUser);
+        navigate('/');
+      }, 1950);
+
     } catch (err: any) {
+      setIsLoading(false);
       const detail = err?.response?.data?.detail;
       if (detail === 'Username already registered') {
         setError('That username is already taken. Try another.');
@@ -71,8 +105,6 @@ const AuthPage: React.FC = () => {
       } else {
         setError('Could not connect to server. Make sure the backend is running.');
       }
-    } finally {
-      setIsLoading(false);
     }
   };
 
@@ -235,6 +267,75 @@ const AuthPage: React.FC = () => {
           </form>
         </div>
       </div>
+
+      {/* ── Post-Login Transition Animation Overlay ── */}
+      {isAnimating && (
+        <div className={`auth-success-overlay ${animStage === 3 ? 'auth-success-exiting' : ''}`}>
+          <div className="auth-success-mesh" />
+          <div className="auth-success-orb auth-orb-glow-1" />
+          <div className="auth-success-orb auth-orb-glow-2" />
+
+          <div className="auth-success-card">
+            {/* Pulsing Concentric Rings & Checkmark */}
+            <div className="auth-pulse-ring-wrap">
+              <div className="auth-pulse-ring ring-1" />
+              <div className="auth-pulse-ring ring-2" />
+              <div className="auth-pulse-ring ring-3" />
+              
+              <div className="auth-success-icon-badge">
+                <svg className="auth-checkmark-svg" viewBox="0 0 52 52">
+                  <circle className="auth-checkmark-circle" cx="26" cy="26" r="23" fill="none" />
+                  <path className="auth-checkmark-check" fill="none" d="M14.1 27.2l7.1 7.2 16.7-16.8" />
+                </svg>
+                <div className="auth-icon-glow" />
+              </div>
+            </div>
+
+            {/* Typography & Greeting */}
+            <div className="auth-success-text-wrap">
+              <div className="auth-success-badge-pill">
+                <Sparkles size={14} className="auth-sparkle-spin" />
+                <span>{isRegisterSuccess ? 'Account Created' : 'Access Granted'}</span>
+              </div>
+              <h2 className="auth-success-title">
+                {isRegisterSuccess ? 'Welcome aboard, ' : 'Welcome back, '}
+                <span className="auth-success-name">{animUser}</span>!
+              </h2>
+              <p className="auth-success-subtitle">
+                {animStage === 0 && 'Verifying credentials and security session...'}
+                {animStage === 1 && 'Syncing your packing lists, wardrobe & trips...'}
+                {(animStage === 2 || animStage === 3) && 'Ready! Launching Home Trip Mode...'}
+              </p>
+            </div>
+
+            {/* Futuristic Progress Track */}
+            <div className="auth-progress-section">
+              <div className="auth-progress-track">
+                <div
+                  className="auth-progress-fill"
+                  style={{
+                    width: animStage === 0 ? '38%' : animStage === 1 ? '78%' : '100%'
+                  }}
+                >
+                  <div className="auth-progress-glow-tip" />
+                </div>
+              </div>
+              <div className="auth-progress-status-row">
+                <span className="auth-progress-step">
+                  {animStage === 0 && 'Phase 1: Authenticated'}
+                  {animStage === 1 && 'Phase 2: Loading Workspace'}
+                  {(animStage === 2 || animStage === 3) && 'Phase 3: Launching'}
+                </span>
+                <span className="auth-progress-pct">
+                  {animStage === 0 && '38%'}
+                  {animStage === 1 && '78%'}
+                  {(animStage === 2 || animStage === 3) && '100%'}
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

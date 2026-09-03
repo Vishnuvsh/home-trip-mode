@@ -11,6 +11,7 @@ interface AuthContextValue extends AuthState {
   isAuthenticated: boolean;
   login: (username: string, password: string) => Promise<void>;
   register: (username: string, password: string) => Promise<void>;
+  persistAuth: (token: string, userId: number, username: string) => void;
   logout: () => void;
 }
 
@@ -21,6 +22,7 @@ const AuthContext = createContext<AuthContextValue>({
   isAuthenticated: false,
   login: async () => {},
   register: async () => {},
+  persistAuth: () => {},
   logout: () => {},
 });
 
@@ -85,6 +87,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         isAuthenticated: !!auth.token,
         login,
         register,
+        persistAuth,
         logout,
       }}
     >
