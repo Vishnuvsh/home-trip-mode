@@ -995,69 +995,71 @@ a.navbar-link.active::after {
   box-shadow: 0 2px 8px rgba(124, 58, 237, 0.3);
 }
 
-/* ── Live Clock ── */
-.navbar-clock {
-  display: flex;
-  align-items: center;
-  gap: 9px;
-  padding: 5px 13px;
-  background: linear-gradient(135deg, rgba(6, 182, 212, 0.1), rgba(124, 58, 237, 0.08));
-  border: 1px solid rgba(6, 182, 212, 0.22);
-  border-radius: 20px;
-  backdrop-filter: blur(8px);
-  white-space: nowrap;
-  box-shadow: 0 2px 10px rgba(6, 182, 212, 0.1);
-}
-
-.navbar-clock-pulse {
-  width: 7px;
-  height: 7px;
-  border-radius: 50%;
-  background: #06b6d4;
-  flex-shrink: 0;
-  position: relative;
-}
-
-.navbar-clock-pulse::after {
-  content: '';
-  position: absolute;
-  inset: -3px;
-  border-radius: 50%;
-  background: #06b6d4;
-  opacity: 0.3;
-  animation: pulse-ring 1.8s ease-out infinite;
-}
-
-@keyframes pulse-ring {
-  0%   { transform: scale(1); opacity: 0.4; }
-  70%  { transform: scale(2.4); opacity: 0; }
-  100% { transform: scale(2.4); opacity: 0; }
-}
-
-.navbar-clock-body {
+/* ── iPhone Lockscreen Style Clock ── */
+.navbar-iphone-clock {
   display: flex;
   flex-direction: column;
-  line-height: 1.2;
+  align-items: center;
+  justify-content: center;
+  padding: 4px 18px 5px;
+  background: rgba(18, 12, 38, 0.72);
+  border: 1px solid rgba(216, 180, 254, 0.22);
+  border-radius: 16px;
+  backdrop-filter: blur(18px) saturate(180%);
+  -webkit-backdrop-filter: blur(18px) saturate(180%);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3), inset 0 1px 1px rgba(255, 255, 255, 0.15);
+  white-space: nowrap;
+  user-select: none;
+  cursor: default;
+  transition: all 0.25s cubic-bezier(0.2, 0.8, 0.2, 1);
 }
 
-.navbar-clock-time {
-  font-size: 13px;
-  font-weight: 800;
-  color: #06b6d4;
-  letter-spacing: 0.04em;
+[data-theme='light'] .navbar-iphone-clock {
+  background: rgba(245, 243, 255, 0.88);
+  border: 1px solid rgba(139, 92, 246, 0.25);
+  box-shadow: 0 4px 16px rgba(124, 58, 237, 0.12), inset 0 1px 1px rgba(255, 255, 255, 0.9);
+}
+
+.navbar-iphone-clock:hover {
+  transform: translateY(-1px) scale(1.02);
+  box-shadow: 0 6px 20px rgba(168, 85, 247, 0.25), inset 0 1px 1px rgba(255, 255, 255, 0.25);
+  border-color: rgba(192, 132, 252, 0.4);
+}
+
+.iphone-clock-date {
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", "Inter", system-ui, sans-serif;
+  font-size: 11px;
+  font-weight: 550;
+  color: #ede9fe;
+  letter-spacing: -0.01em;
+  line-height: 1.15;
+  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.4);
+}
+
+[data-theme='light'] .iphone-clock-date {
+  color: #6b21a8;
+  text-shadow: none;
+}
+
+.iphone-clock-time {
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Rounded", "SF Pro Display", system-ui, sans-serif;
+  font-size: 24px;
+  font-weight: 750;
+  color: #ffffff;
+  line-height: 1;
+  letter-spacing: -0.04em;
   font-variant-numeric: tabular-nums;
+  margin-top: 1px;
+  text-shadow: 0 2px 10px rgba(192, 132, 252, 0.4), 0 0 20px rgba(147, 51, 234, 0.3);
 }
 
-.navbar-clock-date {
-  font-size: 9.5px;
-  font-weight: 600;
-  color: #a78bfa;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
+[data-theme='light'] .iphone-clock-time {
+  color: #2e1065;
+  text-shadow: 0 2px 8px rgba(124, 58, 237, 0.2);
 }
 
 @media (max-width: 768px) {
-  .navbar-clock {
+  .navbar-iphone-clock {
     display: none;
   }
 }

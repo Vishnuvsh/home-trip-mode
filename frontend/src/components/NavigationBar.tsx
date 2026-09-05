@@ -11,24 +11,25 @@ const NavigationBar = () => {
   const { isDark, toggleTheme } = useTheme();
   const { username, logout } = useAuth();
 
-  // Live Clock
+  // Live iPhone Clock
   const [time, setTime] = useState(() => new Date());
   useEffect(() => {
     const timer = setInterval(() => setTime(new Date()), 1000);
     return () => clearInterval(timer);
   }, []);
 
-  const timeStr = time.toLocaleTimeString('en-IN', {
-    hour: '2-digit',
-    minute: '2-digit',
-    second: '2-digit',
-    hour12: true,
-  });
-  const dateStr = time.toLocaleDateString('en-IN', {
-    weekday: 'short',
+  // Format date like iPhone lockscreen: "Sunday, October 5"
+  const dateStr = time.toLocaleDateString('en-US', {
+    weekday: 'long',
+    month: 'long',
     day: 'numeric',
-    month: 'short',
   });
+
+  // Format time like iPhone lockscreen: "9:35"
+  const hours = time.getHours();
+  const minutes = time.getMinutes().toString().padStart(2, '0');
+  const hour12 = hours % 12 || 12;
+  const timeStr = `${hour12}:${minutes}`;
 
   const links = [
     { to: '/', label: 'Dashboard', Icon: LayoutDashboard },
@@ -69,13 +70,10 @@ const NavigationBar = () => {
 
         {/* ── RIGHT: Clock + User + Theme + Logout ── */}
         <div className="navbar-right">
-          {/* Live Clock */}
-          <div className="navbar-clock">
-            <span className="navbar-clock-pulse" />
-            <div className="navbar-clock-body">
-              <span className="navbar-clock-time">{timeStr}</span>
-              <span className="navbar-clock-date">{dateStr}</span>
-            </div>
+          {/* ── iPhone Lockscreen Style Clock ── */}
+          <div className="navbar-iphone-clock" title={`${dateStr} ${timeStr}`}>
+            <span className="iphone-clock-date">{dateStr}</span>
+            <span className="iphone-clock-time">{timeStr}</span>
           </div>
 
           {/* Divider removed — items grouped tight */}
