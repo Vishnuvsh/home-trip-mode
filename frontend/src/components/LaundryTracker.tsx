@@ -103,7 +103,7 @@ const LaundryTracker = () => {
             <Sparkles size={14} className="lt-sparkle-icon" />
             <span>Smart Wardrobe Management</span>
           </div>
-          <h1 className="lt-main-title">Laundry<span className="text-gradient">Tracker</span></h1>
+          <h1 className="lt-main-title">Laundry Tracker</h1>
           <p className="lt-main-subtitle">Keep your wardrobe fresh and ready for your next trip.</p>
         </div>
 
