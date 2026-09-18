@@ -103,7 +103,7 @@ const LaundryTracker = () => {
             <Sparkles size={14} className="lt-sparkle-icon" />
             <span>Smart Wardrobe Management</span>
           </div>
-          <h1 className="lt-main-title">Laundry Tracker</h1>
+          <h1 className="lt-main-title">Laundry<span className="text-gradient">Tracker</span></h1>
           <p className="lt-main-subtitle">Keep your wardrobe fresh and ready for your next trip.</p>
         </div>
 
@@ -146,7 +146,30 @@ const LaundryTracker = () => {
           </div>
 
           {/* Add Item Form */}
-         
+          <div className="lt-glass-card lt-add-card">
+            <div className="lt-card-header" style={{ marginBottom: '0' }}>
+              <h3 className="lt-card-title">Add Clothing</h3>
+              <p className="lt-card-subtitle">Register a new item to your wardrobe.</p>
+            </div>
+            <form onSubmit={handleAddItem} className="lt-premium-form">
+              <div className="lt-input-group">
+                <Shirt size={18} className="lt-input-icon" />
+                <input
+                  type="text"
+                  placeholder="e.g. Vintage Denim Jacket..."
+                  value={newItemName}
+                  onChange={e => setNewItemName(e.target.value)}
+                  className="lt-premium-input"
+                  id="clothing-item-input"
+                  autoComplete="off"
+                />
+              </div>
+              <button type="submit" className="lt-premium-btn" id="add-clothing-btn" disabled={!newItemName.trim()}>
+                <Plus size={20} />
+                <span>Add Item</span>
+              </button>
+            </form>
+          </div>
         </div>
 
         {/* Columns Grid */}

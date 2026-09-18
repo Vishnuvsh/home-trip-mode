@@ -5,22 +5,18 @@ import {
   LayoutDashboard,
   Navigation,
   Shirt,
-  Sun,
-  Moon,
   Power,
   User,
   Menu,
   X,
   Sparkles,
 } from 'lucide-react';
-import { useTheme } from '../context/ThemeContext';
 import { useAuth } from '../context/AuthContext';
 import './NavigationBar.css';
 
 const NavigationBar = () => {
   const location = useLocation();
   const navigate = useNavigate();
-  const { isDark, toggleTheme } = useTheme();
   const { username, logout } = useAuth();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
@@ -125,22 +121,6 @@ const NavigationBar = () => {
               </div>
             )}
 
-            {/* Theme Toggle Button */}
-            <button
-              type="button"
-              className={`nav-theme-toggle ${isDark ? 'is-dark' : 'is-light'}`}
-              onClick={toggleTheme}
-              aria-label={isDark ? 'Switch to Light mode' : 'Switch to Dark mode'}
-              title={isDark ? 'Switch to Light mode' : 'Switch to Dark mode'}
-            >
-              <div className="nav-theme-thumb">
-                {isDark ? (
-                  <Sun size={14} strokeWidth={2.4} className="theme-icon sun-spin" />
-                ) : (
-                  <Moon size={14} strokeWidth={2.4} className="theme-icon moon-glow" />
-                )}
-              </div>
-            </button>
 
             {/* Logout Action */}
             <button
@@ -201,14 +181,6 @@ const NavigationBar = () => {
               )}
 
               <div className="nav-mobile-actions">
-                <button
-                  type="button"
-                  className="nav-mobile-theme-btn"
-                  onClick={toggleTheme}
-                >
-                  {isDark ? <Sun size={16} /> : <Moon size={16} />}
-                  <span>{isDark ? 'Light Theme' : 'Dark Theme'}</span>
-                </button>
 
                 <button
                   type="button"
