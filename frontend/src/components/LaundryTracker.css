@@ -205,7 +205,7 @@
 
 .lt-progress-bar-fill {
   height: 100%;
-  background: linear-gradient(90deg, var(--green), #34d399);
+  background: var(--green);
   border-radius: 99px;
   position: relative;
   transition: width 1s cubic-bezier(0.16, 1, 0.3, 1);
