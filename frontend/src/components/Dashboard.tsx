@@ -235,7 +235,7 @@ const Dashboard: React.FC = () => {
       <div className="db-bg-mesh" />
       <div className="bg-orb bg-orb-1" />
       <div className="bg-orb bg-orb-2" />
-      <div className="bg-orb bg-orb-3" style={{ opacity: 0.1, width: '500px', height: '500px', background: 'radial-gradient(circle, var(--green-light) 0%, transparent 60%)', top: '30%', right: '-200px', animationDelay: '-12s' }} />
+      <div className="bg-orb bg-orb-3" />
 
       {showModal && <AddTripModal onClose={() => setShowModal(false)} onAdd={() => { fetchTrips(); fetchStats(); }} />}
 
@@ -353,7 +353,7 @@ const Dashboard: React.FC = () => {
           </div>
         </div>
 
-        <div className="db-glass-card" style={{ animationDelay: '0.2s' }}>
+        <div className="db-glass-card upcoming-trips-card" style={{ animationDelay: '0.2s' }}>
           <div className="db-card-header">
             <div className="db-card-title-wrap">
               <div className="db-icon-box db-icon-box-indigo"><Calendar size={20} /></div>
