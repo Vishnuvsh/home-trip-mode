@@ -153,7 +153,7 @@ const TripManager: React.FC = () => {
       <div className="tm-bg-mesh" />
       <div className="bg-orb bg-orb-1" />
       <div className="bg-orb bg-orb-2" />
-      <div className="bg-orb bg-orb-3" style={{ opacity: 0.15, width: '400px', height: '400px', background: 'radial-gradient(circle, var(--amber-light) 0%, transparent 60%)', top: '10%', right: '-100px', animationDelay: '-4s' }} />
+      <div className="bg-orb bg-orb-3" />
 
       <div className="tm-container">
 
