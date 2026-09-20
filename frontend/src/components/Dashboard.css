@@ -12,19 +12,21 @@
   position: absolute;
   inset: 0;
   background-image: 
-    radial-gradient(at 0% 0%, hsla(253,16%,7%,1) 0, transparent 50%), 
-    radial-gradient(at 80% 0%, hsla(225,39%,40%,0.25) 0, transparent 50%), 
-    radial-gradient(at 0% 100%, hsla(339,49%,40%,0.25) 0, transparent 50%);
+    radial-gradient(at 0% 0%, hsla(240, 60%, 8%, 1) 0, transparent 55%), 
+    radial-gradient(at 85% 5%, hsla(260, 80%, 22%, 0.6) 0, transparent 50%), 
+    radial-gradient(at 10% 95%, hsla(220, 80%, 18%, 0.7) 0, transparent 50%),
+    radial-gradient(at 90% 90%, hsla(280, 70%, 20%, 0.5) 0, transparent 50%);
   z-index: 0;
   pointer-events: none;
-  opacity: 0.7;
+  opacity: 0.9;
   filter: blur(40px);
 }
 [data-theme='light'] .db-bg-mesh {
   background-image: 
-    radial-gradient(at 0% 0%, hsla(253,16%,97%,1) 0, transparent 50%), 
-    radial-gradient(at 80% 0%, hsla(225,100%,80%,0.4) 0, transparent 50%), 
-    radial-gradient(at 0% 100%, hsla(339,100%,80%,0.4) 0, transparent 50%);
+    radial-gradient(at 0% 0%, hsla(240, 60%, 95%, 1) 0, transparent 55%), 
+    radial-gradient(at 85% 5%, hsla(260, 80%, 88%, 0.5) 0, transparent 50%), 
+    radial-gradient(at 10% 95%, hsla(220, 80%, 90%, 0.6) 0, transparent 50%),
+    radial-gradient(at 90% 90%, hsla(280, 70%, 90%, 0.4) 0, transparent 50%);
 }
 
 .db-container {
@@ -365,7 +367,7 @@
   transition: width 1s cubic-bezier(0.16, 1, 0.3, 1);
 }
 .db-progress-bar-fill.fill-green {
-  background: linear-gradient(90deg, var(--green), #34d399);
+  background: var(--green);
   box-shadow: 0 0 16px var(--green-glow);
 }
 .db-progress-bar-fill.fill-red {
@@ -742,4 +744,9 @@
 @keyframes scale-up {
   from { opacity: 0; transform: scale(0.95); }
   to { opacity: 1; transform: scale(1); }
+}
+
+.db-glass-card.upcoming-trips-card {
+  background: var(--green);
+  border-color: var(--green);
 }
