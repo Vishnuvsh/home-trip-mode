@@ -12,14 +12,55 @@
   position: absolute;
   inset: 0;
   background-image: 
-    radial-gradient(at 0% 0%, hsla(240, 60%, 8%, 1) 0, transparent 55%), 
-    radial-gradient(at 85% 5%, hsla(260, 80%, 22%, 0.6) 0, transparent 50%), 
-    radial-gradient(at 10% 95%, hsla(220, 80%, 18%, 0.7) 0, transparent 50%),
-    radial-gradient(at 90% 90%, hsla(280, 70%, 20%, 0.5) 0, transparent 50%);
+    radial-gradient(at 0% 0%, hsla(160, 80%, 15%, 0.85) 0, transparent 65%), 
+    radial-gradient(at 85% 5%, hsla(180, 80%, 20%, 0.8) 0, transparent 60%), 
+    radial-gradient(at 10% 95%, hsla(200, 70%, 15%, 0.85) 0, transparent 60%),
+    radial-gradient(at 90% 90%, hsla(150, 70%, 10%, 0.9) 0, transparent 55%);
   z-index: 0;
   pointer-events: none;
-  opacity: 0.9;
+  opacity: 0.95;
   filter: blur(40px);
+}
+
+.bg-orb {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(60px);
+  z-index: 0;
+  animation: float-orb infinite alternate ease-in-out;
+  pointer-events: none;
+}
+
+.bg-orb-1 {
+  width: 450px; height: 450px;
+  background: radial-gradient(circle, var(--accent) 0%, transparent 70%);
+  top: -120px; left: -120px;
+  animation-duration: 20s;
+  opacity: 0.25;
+}
+
+.bg-orb-2 {
+  width: 600px; height: 600px;
+  background: radial-gradient(circle, var(--green) 0%, transparent 70%);
+  bottom: -200px; left: 30%;
+  animation-duration: 25s;
+  animation-delay: -5s;
+  opacity: 0.2;
+}
+
+.bg-orb-3 {
+  width: 500px; height: 500px;
+  background: radial-gradient(circle, var(--amber) 0%, transparent 60%);
+  top: 20%; right: -150px;
+  animation-duration: 22s;
+  animation-delay: -10s;
+  opacity: 0.15;
+}
+
+@keyframes float-orb {
+  0% { transform: translate(0, 0) scale(1); }
+  50% { transform: translate(30px, -50px) scale(1.1); }
+  100% { transform: translate(-20px, 20px) scale(0.9); }
 }
 [data-theme='light'] .db-bg-mesh {
   background-image: 
@@ -746,7 +787,3 @@
   to { opacity: 1; transform: scale(1); }
 }
 
-.db-glass-card.upcoming-trips-card {
-  background: var(--green);
-  border-color: var(--green);
-}
