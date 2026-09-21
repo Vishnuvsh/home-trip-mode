@@ -1,4 +1,4 @@
-import { Navigate, Route, BrowserRouter as Router, Routes } from 'react-router-dom';
+import { Navigate, Route, BrowserRouter as Router, Routes, useLocation } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import NavigationBar from './components/NavigationBar';
 import Dashboard from './components/Dashboard';
@@ -20,8 +20,12 @@ const PublicRoute = ({ children }: { children: React.ReactNode }) => {
 
 function AppRoutes() {
   const { isAuthenticated } = useAuth();
+  const location = useLocation();
+  const isDashboard = location.pathname === '/';
+  const layoutClass = isDashboard ? 'layout-top-nav' : 'layout-sidebar';
+
   return (
-    <>
+    <div className={`app-container ${layoutClass}`}>
       {isAuthenticated && <NavigationBar />}
       <div className="app-shell">
         <Routes>
@@ -32,7 +36,7 @@ function AppRoutes() {
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </div>
-    </>
+    </div>
   );
 }
 
