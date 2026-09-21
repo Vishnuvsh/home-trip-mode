@@ -20,9 +20,11 @@
 .nav-island {
   position: relative;
   width: 100%;
-  max-width: 1000px; /* Tighter width for minimalist look */
+  max-width: 1000px;
+  /* Tighter width for minimalist look */
   pointer-events: auto;
-  border-radius: 50px; /* Pill shape */
+  border-radius: 50px;
+  /* Pill shape */
   background: rgba(255, 255, 255, 0.4);
   border: 1px solid rgba(255, 255, 255, 0.5);
   backdrop-filter: blur(12px) saturate(150%);
@@ -68,7 +70,8 @@
   width: 24px;
   height: 24px;
   border-radius: 50%;
-  background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); /* Blue gradient from image */
+  background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+  /* Blue gradient from image */
   display: flex;
   align-items: center;
   justify-content: center;
@@ -77,7 +80,8 @@
 }
 
 /* Hide old icons/pings to match the simple circle from the image */
-.nav-brand-icon, .nav-brand-ping {
+.nav-brand-icon,
+.nav-brand-ping {
   display: none;
 }
 
@@ -94,7 +98,8 @@
 }
 
 .nav-brand-pill {
-  display: none; /* Hide subtitle for minimalist look */
+  display: none;
+  /* Hide subtitle for minimalist look */
 }
 
 /* ═══════════════════════════════════════════════════════════════
@@ -110,7 +115,8 @@
 .nav-segmented-track {
   display: flex;
   align-items: center;
-  gap: 24px; /* Evenly spaced */
+  gap: 24px;
+  /* Evenly spaced */
 }
 
 .nav-pill-item {
@@ -148,7 +154,8 @@
 }
 
 /* Hide icons and active dot for the text-only minimalist look */
-.nav-pill-icon, .nav-pill-active-dot {
+.nav-pill-icon,
+.nav-pill-active-dot {
   display: none;
 }
 
@@ -163,7 +170,8 @@
 }
 
 /* Hide secondary widgets on desktop to keep it super clean like the image */
-.nav-clock-widget, .nav-user-pill {
+.nav-clock-widget,
+.nav-user-pill {
   display: none;
 }
 
@@ -187,12 +195,12 @@
 
 .nav-theme-toggle:hover {
   color: #0f172a;
-  background: rgba(0,0,0,0.05);
+  background: rgba(0, 0, 0, 0.05);
 }
 
 [data-theme='dark'] .nav-theme-toggle:hover {
   color: #ffffff;
-  background: rgba(255,255,255,0.1);
+  background: rgba(255, 255, 255, 0.1);
 }
 
 .nav-theme-thumb {
@@ -208,7 +216,8 @@
   gap: 6px;
   padding: 8px 18px;
   border-radius: 999px;
-  background: linear-gradient(135deg, #60a5fa 0%, #818cf8 100%); /* Light blue gradient from image */
+  background: linear-gradient(135deg, #60a5fa 0%, #818cf8 100%);
+  /* Light blue gradient from image */
   border: none;
   color: #ffffff;
   font-family: var(--font, 'Inter', sans-serif);
@@ -253,14 +262,14 @@
 ═══════════════════════════════════════════════════════════════ */
 .nav-mobile-drawer {
   padding: 16px;
-  border-top: 1px solid rgba(0,0,0,0.05);
+  border-top: 1px solid rgba(0, 0, 0, 0.05);
   display: flex;
   flex-direction: column;
   gap: 16px;
 }
 
 [data-theme='dark'] .nav-mobile-drawer {
-  border-top: 1px solid rgba(255,255,255,0.05);
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
 }
 
 .nav-mobile-links {
@@ -285,13 +294,13 @@
 }
 
 .nav-mobile-item.active {
-  background: rgba(0,0,0,0.04);
+  background: rgba(0, 0, 0, 0.04);
   color: #0f172a;
   font-weight: 600;
 }
 
 [data-theme='dark'] .nav-mobile-item.active {
-  background: rgba(255,255,255,0.05);
+  background: rgba(255, 255, 255, 0.05);
   color: #ffffff;
 }
 
@@ -299,28 +308,33 @@
 .nav-mobile-item svg {
   display: none;
 }
-.nav-mobile-badge { display: none; }
+
+.nav-mobile-badge {
+  display: none;
+}
 
 .nav-mobile-footer {
   display: flex;
   flex-direction: column;
   gap: 12px;
-  border-top: 1px solid rgba(0,0,0,0.05);
+  border-top: 1px solid rgba(0, 0, 0, 0.05);
   padding-top: 16px;
 }
 
 [data-theme='dark'] .nav-mobile-footer {
-  border-top-color: rgba(255,255,255,0.05);
+  border-top-color: rgba(255, 255, 255, 0.05);
 }
 
-.nav-mobile-clock, .nav-mobile-user {
+.nav-mobile-clock,
+.nav-mobile-user {
   display: flex;
   justify-content: space-between;
   font-size: 13px;
   color: #64748b;
 }
 
-[data-theme='dark'] .nav-mobile-clock, [data-theme='dark'] .nav-mobile-user {
+[data-theme='dark'] .nav-mobile-clock,
+[data-theme='dark'] .nav-mobile-user {
   color: #94a3b8;
 }
 
@@ -330,7 +344,8 @@
   gap: 8px;
 }
 
-.nav-mobile-theme-btn, .nav-mobile-logout-btn {
+.nav-mobile-theme-btn,
+.nav-mobile-logout-btn {
   padding: 10px;
   border-radius: 12px;
   border: none;
@@ -340,11 +355,12 @@
 }
 
 .nav-mobile-theme-btn {
-  background: rgba(0,0,0,0.05);
+  background: rgba(0, 0, 0, 0.05);
   color: #475569;
 }
+
 [data-theme='dark'] .nav-mobile-theme-btn {
-  background: rgba(255,255,255,0.1);
+  background: rgba(255, 255, 255, 0.1);
   color: #e2e8f0;
 }
 
@@ -357,12 +373,17 @@
    RESPONSIVE BREAKPOINTS
 ═══════════════════════════════════════════════════════════════ */
 @media (max-width: 768px) {
-  .nav-center-menu, .nav-logout-action, .nav-theme-toggle {
+
+  .nav-center-menu,
+  .nav-logout-action,
+  .nav-theme-toggle {
     display: none;
   }
+
   .nav-mobile-toggle {
     display: flex;
   }
+
   .nav-header-wrapper {
     padding: 0 16px;
     top: 16px;

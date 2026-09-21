@@ -57,8 +57,11 @@ const NavigationBar = () => {
     navigate('/auth');
   };
 
+  const isDashboard = location.pathname === '/';
+  const navLayoutClass = isDashboard ? 'nav-horizontal' : 'nav-vertical';
+
   return (
-    <header className="nav-header-wrapper">
+    <header className={`nav-header-wrapper ${navLayoutClass}`}>
       <nav className="nav-island" aria-label="Main Navigation">
         {/* ── AMBIENT TOP GLOW LINE ── */}
         <div className="nav-glow-accent" aria-hidden="true" />
