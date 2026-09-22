@@ -233,9 +233,6 @@ const Dashboard: React.FC = () => {
   return (
     <div className="db-page-wrap">
       <div className="db-bg-mesh" />
-      <div className="bg-orb bg-orb-1" />
-      <div className="bg-orb bg-orb-2" />
-      <div className="bg-orb bg-orb-3" />
 
       {showModal && <AddTripModal onClose={() => setShowModal(false)} onAdd={() => { fetchTrips(); fetchStats(); }} />}
 
