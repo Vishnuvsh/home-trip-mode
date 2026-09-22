@@ -52,6 +52,21 @@ def register_user(user: schemas.UserCreate, db: Session = Depends(get_db)):
     db.add(new_user)
     db.commit()
     db.refresh(new_user)
+
+    # Automatically add default clothes for the new user
+    default_clothes = [
+        "T-Shirt 👕", 
+        "Shirt 👔", 
+        "Jeans/Pants 👖", 
+        "Towel 🧖‍♂️", 
+        "Bedsheet 🛏️", 
+        "Undergarments 🩲"
+    ]
+    for item_name in default_clothes:
+        db_item = models.ClothingItem(user_id=new_user.id, item_name=item_name, is_clean=True)
+        db.add(db_item)
+    db.commit()
+
     return new_user
 
 @app.post("/auth/login", response_model=schemas.Token)
@@ -180,7 +195,7 @@ def parse_trip_with_gemini(prompt: str):
         raise HTTPException(status_code=500, detail="Gemini API Key is missing. Please configure it in .env file.")
         
     try:
-        model = genai.GenerativeModel('gemini-1.5-flash', generation_config={"response_mime_type": "application/json"})
+        model = genai.GenerativeModel('gemini-3.6-flash', generation_config={"response_mime_type": "application/json"})
         today = datetime.utcnow().strftime("%Y-%m-%d")
         
         sys_prompt = f"""You are an AI Smart Packing Assistant. Today's date is {today}.
