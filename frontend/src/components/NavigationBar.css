@@ -25,8 +25,8 @@
   pointer-events: auto;
   border-radius: 50px;
   /* Pill shape */
-  background: rgba(255, 255, 255, 0.4);
-  border: 1px solid rgba(255, 255, 255, 0.5);
+  background: rgba(255, 255, 255, 0.15);
+  border: 1px solid rgba(255, 255, 255, 0.2);
   backdrop-filter: blur(12px) saturate(150%);
   -webkit-backdrop-filter: blur(12px) saturate(150%);
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.05);
@@ -67,11 +67,10 @@
 }
 
 .nav-brand-badge {
-  width: 24px;
-  height: 24px;
+  width: 32px;
+  height: 32px;
   border-radius: 50%;
   background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
-  /* Blue gradient from image */
   display: flex;
   align-items: center;
   justify-content: center;
@@ -79,8 +78,10 @@
   flex-shrink: 0;
 }
 
-/* Hide old icons/pings to match the simple circle from the image */
-.nav-brand-icon,
+.nav-brand-icon {
+  color: white;
+}
+
 .nav-brand-ping {
   display: none;
 }
@@ -89,7 +90,7 @@
   font-family: var(--font, 'Inter', sans-serif);
   font-size: 16px;
   font-weight: 700;
-  color: #1e293b;
+  color: #ffffff;
   letter-spacing: -0.3px;
 }
 
@@ -126,27 +127,27 @@
   font-family: var(--font, 'Inter', sans-serif);
   font-size: 14px;
   font-weight: 500;
-  color: #64748b;
+  color: rgba(255, 255, 255, 0.7);
   text-decoration: none;
   transition: color 0.2s ease;
   padding: 4px 8px;
 }
 
 [data-theme='dark'] .nav-pill-item {
-  color: #94a3b8;
+  color: rgba(255, 255, 255, 0.7);
 }
 
 .nav-pill-item:hover {
-  color: #0f172a;
+  color: #00f2fe;
 }
 
 [data-theme='dark'] .nav-pill-item:hover {
-  color: #f8fafc;
+  color: #00f2fe;
 }
 
 .nav-pill-item.active {
-  color: #0f172a;
-  font-weight: 600;
+  color: #ffffff;
+  font-weight: 700;
 }
 
 [data-theme='dark'] .nav-pill-item.active {

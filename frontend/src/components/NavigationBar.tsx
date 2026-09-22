@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import {
-  Compass,
+  Home,
   LayoutDashboard,
   Navigation,
   Shirt,
@@ -70,7 +70,7 @@ const NavigationBar = () => {
           {/* ── LEFT: Brand Logo & Title ── */}
           <Link to="/" className="nav-brand" aria-label="Home Trip Mode Home">
             <div className="nav-brand-badge">
-              <Compass className="nav-brand-icon compass-spin" size={20} strokeWidth={2.4} />
+              <Home className="nav-brand-icon" size={18} strokeWidth={2.4} />
               <span className="nav-brand-ping" />
             </div>
             <div className="nav-brand-text-wrap">
