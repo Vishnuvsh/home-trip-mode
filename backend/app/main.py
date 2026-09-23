@@ -53,20 +53,6 @@ def register_user(user: schemas.UserCreate, db: Session = Depends(get_db)):
     db.commit()
     db.refresh(new_user)
 
-    # Automatically add default clothes for the new user
-    default_clothes = [
-        "T-Shirt 👕", 
-        "Shirt 👔", 
-        "Jeans/Pants 👖", 
-        "Towel 🧖‍♂️", 
-        "Bedsheet 🛏️", 
-        "Undergarments 🩲"
-    ]
-    for item_name in default_clothes:
-        db_item = models.ClothingItem(user_id=new_user.id, item_name=item_name, is_clean=True)
-        db.add(db_item)
-    db.commit()
-
     return new_user
 
 @app.post("/auth/login", response_model=schemas.Token)
@@ -87,8 +73,6 @@ def create_trip(trip: schemas.TripCreate, user_id: int, db: Session = Depends(ge
     db_trip = models.Trip(**trip.dict(), user_id=user_id)
     db.add(db_trip)
     db.commit()
-    db.refresh(db_trip)
-
     # 2. Generate Default Checklist
     default_items = [
         ("Electronics", "Phone Charger"), ("Electronics", "Laptop"),
