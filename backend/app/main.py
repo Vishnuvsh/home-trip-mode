@@ -12,7 +12,7 @@ load_dotenv()
 GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY")
 if GEMINI_API_KEY and GEMINI_API_KEY != "put_your_api_key_here":
     genai.configure(api_key=GEMINI_API_KEY)
-
+    
 
 from app import models, schemas
 from app.database import engine, get_db
@@ -65,7 +65,8 @@ def login_for_access_token(user: schemas.UserLogin, db: Session = Depends(get_db
 @app.post("/trips/", response_model=schemas.TripResponse)
 def create_trip(trip: schemas.TripCreate, user_id: int, db: Session = Depends(get_db)):
     # 1. Create the Trip
-    db_trip = models.Trip(**trip.dict(), user_id=user_id)
+    trip_data = trip.dict(exclude_none=True)
+    db_trip = models.Trip(**trip_data, user_id=user_id)
     db.add(db_trip)
     db.commit()
     # 2. Generate Default Checklist
@@ -78,20 +79,27 @@ def create_trip(trip: schemas.TripCreate, user_id: int, db: Session = Depends(ge
         db_item = models.ChecklistItem(trip_id=db_trip.id, category=category, item_name=name)
         db.add(db_item)
 
-    # 3. If "Going Home", automatically add dirty clothes to checklist
+    # 3. Handle Clothes based on trip type
     if trip.trip_type == "Going Home":
-        dirty_clothes = db.query(models.ClothingItem).filter(
+        clothes_to_pack = db.query(models.ClothingItem).filter(
             models.ClothingItem.user_id == user_id, 
             models.ClothingItem.is_clean == False
         ).all()
+    elif trip.trip_type == "Returning" or trip.trip_type == "Returning to PG":
+        clothes_to_pack = db.query(models.ClothingItem).filter(
+            models.ClothingItem.user_id == user_id, 
+            models.ClothingItem.is_clean == True
+        ).all()
+    else:
+        clothes_to_pack = []
         
-        for cloth in dirty_clothes:
-            db_item = models.ChecklistItem(
-                trip_id=db_trip.id, 
-                category="Clothes (Laundry)", 
-                item_name=cloth.item_name
-            )
-            db.add(db_item)
+    for cloth in clothes_to_pack:
+        db_item = models.ChecklistItem(
+            trip_id=db_trip.id, 
+            category="Clothes (Laundry)", 
+            item_name=cloth.item_name
+        )
+        db.add(db_item)
 
     db.commit()
     return db_trip
@@ -112,6 +120,13 @@ def get_trip_checklist(trip_id: int, db: Session = Depends(get_db)):
     items = db.query(models.ChecklistItem).filter(models.ChecklistItem.trip_id == trip_id).all()
     return items
 
+@app.get("/trips/{trip_id}", response_model=schemas.TripResponse)
+def get_trip(trip_id: int, db: Session = Depends(get_db)):
+    trip = db.query(models.Trip).filter(models.Trip.id == trip_id).first()
+    if not trip:
+        raise HTTPException(status_code=404, detail="Trip not found")
+    return trip
+
 @app.put("/checklist/{item_id}/toggle", response_model=schemas.ChecklistItemResponse)
 def toggle_checklist_item(item_id: int, db: Session = Depends(get_db)):
     item = db.query(models.ChecklistItem).filter(models.ChecklistItem.id == item_id).first()
@@ -121,6 +136,31 @@ def toggle_checklist_item(item_id: int, db: Session = Depends(get_db)):
     db.commit()
     db.refresh(item)
     return item
+
+@app.post("/trips/{trip_id}/checklist", response_model=schemas.ChecklistItemResponse)
+def add_checklist_item(trip_id: int, item: schemas.ChecklistItemCreate, db: Session = Depends(get_db)):
+    trip = db.query(models.Trip).filter(models.Trip.id == trip_id).first()
+    if not trip:
+        raise HTTPException(status_code=404, detail="Trip not found")
+    db_item = models.ChecklistItem(
+        trip_id=trip_id,
+        category=item.category,
+        item_name=item.item_name,
+        is_completed=False
+    )
+    db.add(db_item)
+    db.commit()
+    db.refresh(db_item)
+    return db_item
+
+@app.delete("/checklist/{item_id}")
+def delete_checklist_item(item_id: int, db: Session = Depends(get_db)):
+    item = db.query(models.ChecklistItem).filter(models.ChecklistItem.id == item_id).first()
+    if not item:
+        raise HTTPException(status_code=404, detail="Checklist item not found")
+    db.delete(item)
+    db.commit()
+    return {"message": "Checklist item deleted successfully"}
 
 @app.get("/clothing/user/{user_id}", response_model=list[schemas.ClothingItemResponse])
 def get_user_clothing(user_id: int, db: Session = Depends(get_db)):
@@ -164,6 +204,56 @@ def delete_trip(trip_id: int, db: Session = Depends(get_db)):
     db.delete(trip)
     db.commit()
     return {"message": "Trip deleted successfully"}
+
+# ═══════════════════════════════════════════════════════════════
+# 💰 Expenses & Budget
+# ═══════════════════════════════════════════════════════════════
+
+@app.get("/trips/{trip_id}/expenses", response_model=list[schemas.ExpenseResponse])
+def get_trip_expenses(trip_id: int, db: Session = Depends(get_db)):
+    return db.query(models.Expense).filter(models.Expense.trip_id == trip_id).order_by(models.Expense.expense_date.desc()).all()
+
+@app.post("/trips/{trip_id}/expenses", response_model=schemas.ExpenseResponse)
+def add_expense(trip_id: int, expense: schemas.ExpenseCreate, db: Session = Depends(get_db)):
+    db_expense = models.Expense(trip_id=trip_id, **expense.dict())
+    db.add(db_expense)
+    db.commit()
+    db.refresh(db_expense)
+    return db_expense
+
+@app.delete("/expenses/{expense_id}")
+def delete_expense(expense_id: int, db: Session = Depends(get_db)):
+    db_expense = db.query(models.Expense).filter(models.Expense.id == expense_id).first()
+    if not db_expense:
+        raise HTTPException(status_code=404, detail="Expense not found")
+    db.delete(db_expense)
+    db.commit()
+    return {"message": "Expense deleted"}
+
+# ═══════════════════════════════════════════════════════════════
+# 🗓️ Trip Itinerary (Daily Planner)
+# ═══════════════════════════════════════════════════════════════
+
+@app.get("/trips/{trip_id}/itinerary", response_model=list[schemas.ItineraryResponse])
+def get_trip_itinerary(trip_id: int, db: Session = Depends(get_db)):
+    return db.query(models.ItineraryItem).filter(models.ItineraryItem.trip_id == trip_id).order_by(models.ItineraryItem.day_number, models.ItineraryItem.id).all()
+
+@app.post("/trips/{trip_id}/itinerary", response_model=schemas.ItineraryResponse)
+def add_itinerary_item(trip_id: int, item: schemas.ItineraryCreate, db: Session = Depends(get_db)):
+    db_item = models.ItineraryItem(trip_id=trip_id, **item.dict())
+    db.add(db_item)
+    db.commit()
+    db.refresh(db_item)
+    return db_item
+
+@app.delete("/itinerary/{item_id}")
+def delete_itinerary_item(item_id: int, db: Session = Depends(get_db)):
+    db_item = db.query(models.ItineraryItem).filter(models.ItineraryItem.id == item_id).first()
+    if not db_item:
+        raise HTTPException(status_code=404, detail="Itinerary item not found")
+    db.delete(db_item)
+    db.commit()
+    return {"message": "Item deleted"}
 
 # ═══════════════════════════════════════════════════════════════
 # ⚡ AI Smart Quick-Add Engine (Natural Language Input)
@@ -250,21 +340,29 @@ def ai_quick_add(request: schemas.AIQuickAddRequest, db: Session = Depends(get_d
             db.add(db_item)
             added_item_names.add(clean_name)
             
-    # 3. If Going Home, add dirty clothes
+    # 3. Handle Clothes based on trip type
     if trip_type == "Going Home":
-        dirty_clothes = db.query(models.ClothingItem).filter(
+        clothes_to_pack = db.query(models.ClothingItem).filter(
             models.ClothingItem.user_id == request.user_id, 
             models.ClothingItem.is_clean == False
         ).all()
-        for cloth in dirty_clothes:
-            if cloth.item_name.lower() not in added_item_names:
-                db_item = models.ChecklistItem(
-                    trip_id=db_trip.id, 
-                    category="Clothes (Laundry)", 
-                    item_name=cloth.item_name
-                )
-                db.add(db_item)
-                added_item_names.add(cloth.item_name.lower())
+    elif trip_type == "Returning" or trip_type == "Returning to PG":
+        clothes_to_pack = db.query(models.ClothingItem).filter(
+            models.ClothingItem.user_id == request.user_id, 
+            models.ClothingItem.is_clean == True
+        ).all()
+    else:
+        clothes_to_pack = []
+        
+    for cloth in clothes_to_pack:
+        if cloth.item_name.lower() not in added_item_names:
+            db_item = models.ChecklistItem(
+                trip_id=db_trip.id, 
+                category="Clothes (Laundry)", 
+                item_name=cloth.item_name
+            )
+            db.add(db_item)
+            added_item_names.add(cloth.item_name.lower())
                 
     db.commit()
     

@@ -30,7 +30,8 @@ class TripBase(BaseModel):
     trip_type: str  # "Going Home" or "Returning"
 
 class TripCreate(TripBase):
-    pass
+    trip_date: Optional[datetime] = None
+    status: Optional[str] = "Pending"
 
 class TripResponse(TripBase):
     id: int
@@ -50,6 +51,10 @@ class ChecklistItemBase(BaseModel):
     item_name: str
     is_completed: bool = False
 
+class ChecklistItemCreate(BaseModel):
+    category: str = "Essentials"
+    item_name: str
+
 class ChecklistItemResponse(ChecklistItemBase):
     id: int
     trip_id: int
@@ -65,6 +70,36 @@ class ClothingItemCreate(ClothingItemBase):
 class ClothingItemResponse(ClothingItemBase):
     id: int
     user_id: int
+    model_config = {"from_attributes": True}
+
+# --- Expenses Schemas ---
+
+class ExpenseBase(BaseModel):
+    description: str
+    amount: float
+
+class ExpenseCreate(ExpenseBase):
+    pass
+
+class ExpenseResponse(ExpenseBase):
+    id: int
+    trip_id: int
+    expense_date: datetime
+    model_config = {"from_attributes": True}
+
+# --- Itinerary Schemas ---
+
+class ItineraryBase(BaseModel):
+    day_number: int
+    time_label: str
+    activity: str
+
+class ItineraryCreate(ItineraryBase):
+    pass
+
+class ItineraryResponse(ItineraryBase):
+    id: int
+    trip_id: int
     model_config = {"from_attributes": True}
 
 # --- AI Smart Quick-Add Schemas ---

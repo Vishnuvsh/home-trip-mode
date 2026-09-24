@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, Boolean, ForeignKey, DateTime
+from sqlalchemy import Column, Integer, String, Float, Boolean, ForeignKey, DateTime
 from sqlalchemy.orm import relationship
 from datetime import datetime
 from app.database import Base
@@ -21,7 +21,9 @@ class Trip(Base):
     status = Column(String, default="Pending") # Pending, Completed
     
     owner = relationship("User", back_populates="trips")
-    checklist = relationship("ChecklistItem", back_populates="trip")
+    checklist = relationship("ChecklistItem", back_populates="trip", cascade="all, delete-orphan")
+    expenses = relationship("Expense", back_populates="trip", cascade="all, delete-orphan")
+    itinerary = relationship("ItineraryItem", back_populates="trip", cascade="all, delete-orphan")
 
 class ChecklistItem(Base):
     __tablename__ = "checklist_items"
@@ -41,3 +43,23 @@ class ClothingItem(Base):
     is_clean = Column(Boolean, default=True)
     
     owner = relationship("User", back_populates="clothes")
+
+class Expense(Base):
+    __tablename__ = "expenses"
+    id = Column(Integer, primary_key=True, index=True)
+    trip_id = Column(Integer, ForeignKey("trips.id"))
+    description = Column(String)
+    amount = Column(Float)
+    expense_date = Column(DateTime, default=datetime.utcnow)
+    
+    trip = relationship("Trip", back_populates="expenses")
+
+class ItineraryItem(Base):
+    __tablename__ = "itinerary_items"
+    id = Column(Integer, primary_key=True, index=True)
+    trip_id = Column(Integer, ForeignKey("trips.id"))
+    day_number = Column(Integer, default=1)
+    time_label = Column(String) # e.g. "09:00 AM" or "Morning"
+    activity = Column(String)
+    
+    trip = relationship("Trip", back_populates="itinerary")
