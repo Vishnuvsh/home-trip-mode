@@ -5,6 +5,7 @@ import Dashboard from './components/Dashboard';
 import TripManager from './components/TripManager';
 import LaundryTracker from './components/LaundryTracker';
 import AuthPage from './components/AuthPage';
+import Documentation from './components/Documentation';
 
 /* ── Protected Route wrapper ── */
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
@@ -33,6 +34,7 @@ function AppRoutes() {
           <Route path="/" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
           <Route path="/trip-manager" element={<ProtectedRoute><TripManager /></ProtectedRoute>} />
           <Route path="/laundry-tracker" element={<ProtectedRoute><LaundryTracker /></ProtectedRoute>} />
+          <Route path="/docs" element={<ProtectedRoute><Documentation /></ProtectedRoute>} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </div>

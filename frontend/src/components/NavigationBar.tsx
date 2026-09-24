@@ -10,6 +10,8 @@ import {
   Menu,
   X,
   Sparkles,
+  Download,
+  BookOpen,
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import './NavigationBar.css';
@@ -32,6 +34,34 @@ const NavigationBar = () => {
     setMobileMenuOpen(false);
   }, [location.pathname]);
 
+  // PWA Install Prompt Logic
+  const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
+  const [isInstallable, setIsInstallable] = useState(false);
+
+  useEffect(() => {
+    const handleBeforeInstallPrompt = (e: Event) => {
+      e.preventDefault();
+      setDeferredPrompt(e);
+      setIsInstallable(true);
+    };
+
+    window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+
+    return () => {
+      window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+    };
+  }, []);
+
+  const handleInstallClick = async () => {
+    if (!deferredPrompt) return;
+    deferredPrompt.prompt();
+    const { outcome } = await deferredPrompt.userChoice;
+    if (outcome === 'accepted') {
+      setIsInstallable(false);
+    }
+    setDeferredPrompt(null);
+  };
+
   // Format date like iOS: "Sun, Sep 6"
   const dateStr = time.toLocaleDateString('en-US', {
     weekday: 'short',
@@ -50,6 +80,7 @@ const NavigationBar = () => {
     { to: '/', label: 'Dashboard', Icon: LayoutDashboard },
     { to: '/trip-manager', label: 'Plan Trip', Icon: Navigation },
     { to: '/laundry-tracker', label: 'Laundry Tracker', Icon: Shirt },
+    { to: '/docs', label: 'Guide', Icon: BookOpen },
   ];
 
   const handleLogout = () => {
@@ -124,6 +155,17 @@ const NavigationBar = () => {
               </div>
             )}
 
+            {/* Install App Button */}
+            {isInstallable && (
+              <button
+                type="button"
+                onClick={handleInstallClick}
+                title="Install App to Home Screen"
+                style={{ background: 'var(--accent)', color: '#000', border: 'none', padding: '6px 12px', borderRadius: '20px', fontSize: '13px', fontWeight: 'bold', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px', marginRight: '8px', boxShadow: '0 4px 12px var(--accent-glow)' }}
+              >
+                <Download size={14} strokeWidth={2.5} /> Install
+              </button>
+            )}
 
             {/* Logout Action */}
             <button
@@ -184,6 +226,17 @@ const NavigationBar = () => {
               )}
 
               <div className="nav-mobile-actions">
+                {isInstallable && (
+                  <button
+                    type="button"
+                    className="nav-mobile-logout-btn"
+                    onClick={handleInstallClick}
+                    style={{ background: 'var(--accent)', color: '#000', border: 'none', marginRight: '8px' }}
+                  >
+                    <Download size={16} />
+                    <span>Install App</span>
+                  </button>
+                )}
 
                 <button
                   type="button"
