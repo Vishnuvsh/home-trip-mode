@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import {
-  Shirt, Calendar, Plus, X, Bot, Mic, Loader2, Sparkles, Check, Home, Building, Plane, Trash2, Droplets, Wind
+  Shirt, Calendar, Plus, X, Bot, Mic, Loader2, Sparkles, Check, Home, Building, Plane, Trash2, Droplets, Wind,
+  ArrowRight
 } from 'lucide-react';
 import api from '../api/axios';
 import { useNavigate } from 'react-router-dom';
@@ -23,6 +24,45 @@ const TRIP_TYPES = [
 ];
 
 const STATUS_OPTIONS = ['Pending', 'Planned', 'Completed', 'Cancelled'];
+
+const SMART_TIPS = [
+  {
+    icon: '⚡',
+    title: 'Charge Up Devices Tonight',
+    text: 'Fully charge your phone, power bank, and laptop before travel so you stay connected throughout the journey.',
+    tag: 'Tech',
+  },
+  {
+    icon: '☂️',
+    title: 'Check Weather & Pack Umbrella',
+    text: 'Weather can change fast! Keep a fold-up umbrella in your bag\'s top or side pocket for quick access.',
+    tag: 'Weather',
+  },
+  {
+    icon: '🎫',
+    title: 'Tickets & ID Card Accessible',
+    text: 'Keep train/bus tickets, Aadhaar, and PG / College ID in an easily reachable pocket so you don\'t fumble.',
+    tag: 'Essentials',
+  },
+  {
+    icon: '🚪',
+    title: 'Hostel Room Safety Check',
+    text: 'Before locking the door, turn off the geyser, AC/fan switches, and check that all water taps are tightly shut.',
+    tag: 'Safety',
+  },
+  {
+    icon: '🧺',
+    title: 'Sort Dirty Laundry Early',
+    text: 'Dump dirty clothes into your laundry bag in advance so you don\'t rush packing at the last minute.',
+    tag: 'Laundry',
+  },
+  {
+    icon: '💊',
+    title: 'Medicines & Water Bottle',
+    text: 'Always carry a filled water bottle and travel headache/sickness tablets in your backpack.',
+    tag: 'Health',
+  },
+];
 
 /* ── Helpers ── */
 const getGreeting = () => {
@@ -150,6 +190,54 @@ const Dashboard: React.FC = () => {
   const [aiPrompt, setAiPrompt] = useState('');
   const [isAiLoading, setIsAiLoading] = useState(false);
   const [isListening, setIsListening] = useState(false);
+  const [tipIndex, setTipIndex] = useState(0);
+
+  const getNextUpcomingTrip = () => {
+    if (trips.length === 0) return null;
+    const now = new Date();
+    now.setHours(0, 0, 0, 0);
+
+    const activeTrips = trips.filter(t => t.status !== 'Cancelled' && t.status !== 'Completed');
+    const pool = activeTrips.length > 0 ? activeTrips : trips;
+
+    const sorted = [...pool]
+      .map(t => ({ ...t, dateObj: new Date(t.trip_date) }))
+      .sort((a, b) => a.dateObj.getTime() - b.dateObj.getTime());
+
+    const future = sorted.find(t => {
+      const d = new Date(t.dateObj);
+      d.setHours(23, 59, 59, 999);
+      return d.getTime() >= now.getTime();
+    });
+
+    return future || sorted[0];
+  };
+
+  const nextTrip = getNextUpcomingTrip();
+
+  const getCountdownDetails = (dateStr: string) => {
+    const tripDate = new Date(dateStr);
+    const today = new Date();
+    tripDate.setHours(0, 0, 0, 0);
+    today.setHours(0, 0, 0, 0);
+
+    const diffMs = tripDate.getTime() - today.getTime();
+    const diffDays = Math.ceil(diffMs / (1000 * 60 * 60 * 24));
+
+    if (diffDays === 0) {
+      return { tag: 'Today! 🚀', label: 'Leaving Today' };
+    } else if (diffDays === 1) {
+      return { tag: 'Tomorrow! 🧳', label: 'Leaving Tomorrow' };
+    } else if (diffDays > 1) {
+      return { tag: `${diffDays} Days Left ⏳`, label: `Trip in ${diffDays} days` };
+    } else {
+      return { tag: 'Scheduled 📅', label: `Trip on ${formatDate(dateStr)}` };
+    }
+  };
+
+  const handleNextTip = () => {
+    setTipIndex(prev => (prev + 1) % SMART_TIPS.length);
+  };
 
   const fetchStats = async () => {
     try {
@@ -269,6 +357,73 @@ const Dashboard: React.FC = () => {
             </button>
           </form>
         </section>
+
+        {/* ⏳ Trip Countdown & Smart Tips Widget (Feature 4) */}
+        <div className="db-countdown-tips-card">
+          {nextTrip ? (
+            <div className="db-countdown-col">
+              <div className="db-countdown-badge-row">
+                <span className="db-pulse-dot" />
+                <span className="db-countdown-tag">{getCountdownDetails(nextTrip.trip_date).tag}</span>
+                <span className="db-countdown-type-pill">
+                  {nextTrip.trip_type === 'Going Home' ? '🏠 Going Home' : nextTrip.trip_type === 'Returning to PG' ? '🏢 Back to PG' : '✈️ Trip'}
+                </span>
+              </div>
+              <div className="db-countdown-main">
+                <h3 className="db-countdown-title">{getCountdownDetails(nextTrip.trip_date).label}</h3>
+                <p className="db-countdown-date">
+                  <Calendar size={14} style={{ display: 'inline', marginRight: 4, verticalAlign: 'text-bottom' }} />
+                  {formatDate(nextTrip.trip_date)}
+                </p>
+              </div>
+              <button 
+                type="button"
+                className="db-countdown-cta"
+                onClick={() => navigate(`/trip-manager?trip_id=${nextTrip.id}`)}
+              >
+                <span>Open Packing Checklist</span>
+                <ArrowRight size={15} />
+              </button>
+            </div>
+          ) : (
+            <div className="db-countdown-col db-countdown-empty">
+              <div className="db-countdown-empty-icon">🎒</div>
+              <div className="db-countdown-main">
+                <h3 className="db-countdown-title">No Upcoming Trips Planned</h3>
+                <p className="db-countdown-date">Schedule a trip to activate your packing countdown</p>
+              </div>
+              <button type="button" className="db-countdown-cta" onClick={() => setShowModal(true)}>
+                <Plus size={15} />
+                <span>Plan a Trip</span>
+              </button>
+            </div>
+          )}
+
+          <div className="db-tips-divider" />
+
+          {/* Smart Travel Tip */}
+          <div className="db-tip-col">
+            <div className="db-tip-header">
+              <div className="db-tip-tag-wrap">
+                <span className="db-tip-icon">{SMART_TIPS[tipIndex].icon}</span>
+                <span className="db-tip-tag">Smart Tip · {SMART_TIPS[tipIndex].tag}</span>
+              </div>
+              <button 
+                type="button" 
+                className="db-tip-cycle-btn" 
+                onClick={handleNextTip}
+                title="Next tip"
+              >
+                <Sparkles size={13} />
+                <span>Next Tip</span>
+              </button>
+            </div>
+            <div className="db-tip-content">
+              <h4 className="db-tip-title">{SMART_TIPS[tipIndex].title}</h4>
+              <p className="db-tip-text">{SMART_TIPS[tipIndex].text}</p>
+            </div>
+          </div>
+        </div>
 
         <div className="db-grid-row">
           <div>
