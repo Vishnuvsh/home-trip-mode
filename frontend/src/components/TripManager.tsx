@@ -337,16 +337,14 @@ const TripManager: React.FC = () => {
   const isGoingHome = currentTripType === 'Going Home';
   const dynamicCategories = Array.from(new Set(checklist.map(i => i.category)));
   const filterTabs = [
-    ...(isGoingHome ? [{ key: 'All', label: 'All Items', icon: '🎒' }] : []),
+    { key: 'All', label: 'All Items', icon: '🎒' },
     ...CATEGORY_PRESETS.filter(p => p.key !== 'All' && dynamicCategories.includes(p.key)),
     ...dynamicCategories
       .filter(c => !CATEGORY_PRESETS.some(p => p.key === c))
       .map(c => ({ key: c, label: c, icon: '📦' })),
   ];
 
-  const effectiveCategory = (!isGoingHome && selectedCategory === 'All' && filterTabs.length > 0) 
-    ? filterTabs[0].key 
-    : selectedCategory;
+  const effectiveCategory = selectedCategory;
 
   const filteredChecklist = effectiveCategory === 'All'
     ? checklist
