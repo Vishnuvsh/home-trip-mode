@@ -194,6 +194,16 @@ def delete_checklist_item(item_id: int, db: Session = Depends(get_db)):
     db.commit()
     return {"message": "Checklist item deleted successfully"}
 
+@app.put("/checklist/{item_id}/rename", response_model=schemas.ChecklistItemResponse)
+def rename_checklist_item(item_id: int, payload: dict, db: Session = Depends(get_db)):
+    item = db.query(models.ChecklistItem).filter(models.ChecklistItem.id == item_id).first()
+    if not item:
+        raise HTTPException(status_code=404, detail="Checklist item not found")
+    item.item_name = payload.get("item_name", item.item_name)
+    db.commit()
+    db.refresh(item)
+    return item
+
 @app.get("/clothing/user/{user_id}", response_model=list[schemas.ClothingItemResponse])
 def get_user_clothing(user_id: int, db: Session = Depends(get_db)):
     items = db.query(models.ClothingItem).filter(models.ClothingItem.user_id == user_id).all()

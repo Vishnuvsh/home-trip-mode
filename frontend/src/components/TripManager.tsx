@@ -128,6 +128,11 @@ const TripManager: React.FC = () => {
   const [newItemCategory, setNewItemCategory] = useState<string>('Essentials');
   const [isAddingItem, setIsAddingItem] = useState<boolean>(false);
 
+  // Confirm & Edit States
+  const [pendingConfirmId, setPendingConfirmId] = useState<number | null>(null);
+  const [editingItemId, setEditingItemId] = useState<number | null>(null);
+  const [editingItemName, setEditingItemName] = useState<string>('');
+
   const showToast = (msg: string) => {
     setToastMsg(msg);
     setTimeout(() => setToastMsg(null), 2500);
@@ -281,6 +286,35 @@ const TripManager: React.FC = () => {
       showToast('Could not save item to backend.');
     } finally {
       setIsAddingItem(false);
+    }
+  };
+
+  const handleConfirmPack = async (itemId: number, itemName: string, wasCompleted: boolean) => {
+    setPendingConfirmId(null);
+    await toggleItem(itemId, itemName, wasCompleted);
+  };
+
+  const handleCancelPack = () => {
+    setPendingConfirmId(null);
+  };
+
+  const handleEditItem = (e: React.MouseEvent, item: ChecklistItem) => {
+    e.stopPropagation();
+    setEditingItemId(item.id);
+    setEditingItemName(item.item_name);
+  };
+
+  const handleSaveEdit = async (e: React.FormEvent, itemId: number) => {
+    e.preventDefault();
+    const trimmed = editingItemName.trim();
+    if (!trimmed) return;
+    setChecklist(prev => prev.map(i => i.id === itemId ? { ...i, item_name: trimmed } : i));
+    setEditingItemId(null);
+    showToast(`✏️ Updated!`);
+    try {
+      await api.put(`/checklist/${itemId}/rename`, { item_name: trimmed });
+    } catch {
+      // silent - already updated locally
     }
   };
 
@@ -606,38 +640,93 @@ const TripManager: React.FC = () => {
               ) : (
                 filteredChecklist.map((item, idx) => {
                   const colorKey = CATEGORY_COLORS[item.category] ?? 'accent';
+                  const isPending = pendingConfirmId === item.id;
+                  const isEditing = editingItemId === item.id;
                   return (
                     <div
                       key={item.id}
                       className={`tm-checklist-item ${item.is_completed ? 'completed' : ''}`}
-                      onClick={() => toggleItem(item.id, item.item_name, item.is_completed)}
-                      style={{ animationDelay: `${idx * 0.04 + 0.1}s` }}
-                      role="button"
-                      tabIndex={0}
-                      onKeyDown={e => e.key === 'Enter' && toggleItem(item.id, item.item_name, item.is_completed)}
+                      style={{ animationDelay: `${idx * 0.04 + 0.1}s`, cursor: 'default' }}
                     >
-                      <div className={`tm-check-box ${item.is_completed ? 'checked' : ''}`}>
+                      {/* Checkbox */}
+                      <div
+                        className={`tm-check-box ${item.is_completed ? 'checked' : ''}`}
+                        onClick={() => {
+                          if (isEditing) return;
+                          if (item.is_completed) {
+                            handleConfirmPack(item.id, item.item_name, item.is_completed);
+                          } else {
+                            setPendingConfirmId(isPending ? null : item.id);
+                          }
+                        }}
+                        role="checkbox"
+                        tabIndex={0}
+                        style={{ cursor: 'pointer', flexShrink: 0 }}
+                        onKeyDown={e => e.key === 'Enter' && setPendingConfirmId(item.id)}
+                      >
                         {item.is_completed && <Check size={16} strokeWidth={3} />}
                       </div>
-                      <div className="tm-item-body">
-                        <p className="tm-item-name">{item.item_name}</p>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                          {item.is_completed ? (
-                            <span style={{ fontSize: '11px', color: 'var(--green)', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Packed</span>
+
+                      <div className="tm-item-body" style={{ flex: 1 }}>
+                        {/* Item name — normal or edit mode */}
+                        {isEditing ? (
+                          <form onSubmit={e => handleSaveEdit(e, item.id)} style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
+                            <input
+                              autoFocus
+                              value={editingItemName}
+                              onChange={e => setEditingItemName(e.target.value)}
+                              style={{ flex: 1, background: 'rgba(255,255,255,0.1)', border: '1px solid var(--accent)', borderRadius: '8px', padding: '4px 10px', color: 'var(--text)', fontSize: '14px', fontWeight: 600 }}
+                              onClick={e => e.stopPropagation()}
+                            />
+                            <button type="submit" style={{ background: 'var(--accent)', color: '#000', border: 'none', borderRadius: '8px', padding: '4px 12px', fontWeight: 700, cursor: 'pointer', fontSize: '13px' }}>Save</button>
+                            <button type="button" onClick={() => setEditingItemId(null)} style={{ background: 'rgba(255,255,255,0.1)', color: 'var(--text)', border: 'none', borderRadius: '8px', padding: '4px 10px', cursor: 'pointer', fontSize: '13px' }}>Cancel</button>
+                          </form>
+                        ) : (
+                          <p className="tm-item-name">{item.item_name}</p>
+                        )}
+
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap', marginTop: isPending ? '8px' : '0' }}>
+                          {/* Confirm pack buttons */}
+                          {isPending && !item.is_completed ? (
+                            <>
+                              <button
+                                type="button"
+                                onClick={() => handleConfirmPack(item.id, item.item_name, item.is_completed)}
+                                style={{ background: 'var(--accent)', color: '#000', border: 'none', borderRadius: '8px', padding: '4px 14px', fontWeight: 700, cursor: 'pointer', fontSize: '13px', display: 'flex', alignItems: 'center', gap: '4px' }}
+                              >✅ Mark Packed</button>
+                              <button
+                                type="button"
+                                onClick={handleCancelPack}
+                                style={{ background: 'rgba(255,255,255,0.1)', color: 'var(--text)', border: 'none', borderRadius: '8px', padding: '4px 12px', cursor: 'pointer', fontSize: '13px' }}
+                              >Cancel</button>
+                            </>
                           ) : (
-                            <span style={{ fontSize: '11px', color: 'var(--text-dim)', fontWeight: '600', textTransform: 'uppercase', letterSpacing: '0.05em' }}>To Pack</span>
+                            <>
+                              {item.is_completed ? (
+                                <span style={{ fontSize: '11px', color: 'var(--green)', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Packed</span>
+                              ) : (
+                                <span style={{ fontSize: '11px', color: 'var(--text-dim)', fontWeight: '600', textTransform: 'uppercase', letterSpacing: '0.05em' }}>To Pack</span>
+                              )}
+                              <span className={`pill pill-${colorKey}`}>{item.category}</span>
+                              {/* Edit button */}
+                              {!isEditing && (
+                                <button
+                                  type="button"
+                                  onClick={e => handleEditItem(e, item)}
+                                  title="Edit item name"
+                                  style={{ background: 'transparent', border: 'none', color: 'var(--text-dim)', cursor: 'pointer', padding: '2px 4px', borderRadius: '6px', fontSize: '14px', lineHeight: 1 }}
+                                >✏️</button>
+                              )}
+                              <button
+                                type="button"
+                                className="tm-item-delete-btn"
+                                onClick={(e) => handleDeleteItem(e, item.id, item.item_name)}
+                                title="Remove item"
+                              >
+                                <Trash2 size={15} />
+                              </button>
+                            </>
                           )}
-                          <span className={`pill pill-${colorKey}`}>
-                            {item.category}
-                          </span>
-                          <button
-                            type="button"
-                            className="tm-item-delete-btn"
-                            onClick={(e) => handleDeleteItem(e, item.id, item.item_name)}
-                            title="Remove item"
-                          >
-                            <Trash2 size={15} />
-                          </button>
                         </div>
                       </div>
                     </div>
