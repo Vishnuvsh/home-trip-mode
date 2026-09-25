@@ -159,6 +159,16 @@ def get_trip(trip_id: int, db: Session = Depends(get_db)):
         raise HTTPException(status_code=404, detail="Trip not found")
     return trip
 
+@app.put("/trips/{trip_id}/status", response_model=schemas.TripResponse)
+def update_trip_status(trip_id: int, payload: dict, db: Session = Depends(get_db)):
+    trip = db.query(models.Trip).filter(models.Trip.id == trip_id).first()
+    if not trip:
+        raise HTTPException(status_code=404, detail="Trip not found")
+    trip.status = payload.get("status", trip.status)
+    db.commit()
+    db.refresh(trip)
+    return trip
+
 @app.put("/checklist/{item_id}/toggle", response_model=schemas.ChecklistItemResponse)
 def toggle_checklist_item(item_id: int, db: Session = Depends(get_db)):
     item = db.query(models.ChecklistItem).filter(models.ChecklistItem.id == item_id).first()

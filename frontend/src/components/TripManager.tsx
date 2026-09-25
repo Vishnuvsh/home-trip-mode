@@ -151,6 +151,10 @@ const TripManager: React.FC = () => {
           const tripRes = await api.get(`/trips/${tripIdStr}`);
           setTripData(tripRes.data);
           setCurrentTripId(Number(tripIdStr));
+          // Restore saved state if trip was already saved
+          if (tripRes.data.status === 'Saved') {
+            setIsSaved(true);
+          }
         } catch (err) {
           setError('Could not load the selected trip.');
         } finally {
