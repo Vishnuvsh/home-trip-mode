@@ -69,37 +69,69 @@ def create_trip(trip: schemas.TripCreate, user_id: int, db: Session = Depends(ge
     db_trip = models.Trip(**trip_data, user_id=user_id)
     db.add(db_trip)
     db.commit()
-    # 2. Generate Default Checklist
-    default_items = [
-        ("Electronics", "Phone Charger"), ("Electronics", "Laptop"),
-        ("Essentials", "Toothbrush"), ("Essentials", "Wallet/ID")
-    ]
     
-    for category, name in default_items:
-        db_item = models.ChecklistItem(trip_id=db_trip.id, category=category, item_name=name)
-        db.add(db_item)
+    is_returning = trip.trip_type in ["Returning", "Returning to PG"]
+    last_home_trip = db.query(models.Trip).filter(
+        models.Trip.user_id == user_id, 
+        models.Trip.trip_type.not_in(["Returning", "Returning to PG"])
+    ).order_by(models.Trip.id.desc()).first()
 
-    # 3. Handle Clothes based on trip type
-    if trip.trip_type == "Going Home":
-        clothes_to_pack = db.query(models.ClothingItem).filter(
-            models.ClothingItem.user_id == user_id, 
-            models.ClothingItem.is_clean == False
+    if is_returning and last_home_trip:
+        # User wants EXACTLY what they took (and checked off) in the previous Going Home trip
+        last_checklist = db.query(models.ChecklistItem).filter(
+            models.ChecklistItem.trip_id == last_home_trip.id,
+            models.ChecklistItem.is_completed == True
         ).all()
-    elif trip.trip_type == "Returning" or trip.trip_type == "Returning to PG":
-        clothes_to_pack = db.query(models.ClothingItem).filter(
-            models.ClothingItem.user_id == user_id, 
-            models.ClothingItem.is_clean == True
-        ).all()
+        for item in last_checklist:
+            db_item = models.ChecklistItem(
+                trip_id=db_trip.id,
+                category=item.category,
+                item_name=item.item_name,
+                is_completed=False
+            )
+            db.add(db_item)
     else:
-        clothes_to_pack = []
+        # Default logic for "Going Home" or if no previous trip exists
+        default_items = [
+            ("Electronics", "Phone Charger"), ("Electronics", "Laptop"),
+            ("Essentials", "Toothbrush"), ("Essentials", "Wallet/ID")
+        ]
         
-    for cloth in clothes_to_pack:
-        db_item = models.ChecklistItem(
-            trip_id=db_trip.id, 
-            category="Clothes (Laundry)", 
-            item_name=cloth.item_name
-        )
-        db.add(db_item)
+        for category, name in default_items:
+            db_item = models.ChecklistItem(trip_id=db_trip.id, category=category, item_name=name)
+            db.add(db_item)
+
+        if trip.trip_type == "Going Home":
+            clothes_to_pack = db.query(models.ClothingItem).filter(
+                models.ClothingItem.user_id == user_id, 
+                models.ClothingItem.is_clean == False
+            ).all()
+        else:
+            clothes_to_pack = db.query(models.ClothingItem).filter(
+                models.ClothingItem.user_id == user_id, 
+                models.ClothingItem.is_clean == True
+            ).all()
+            
+        for cloth in clothes_to_pack:
+            db_item = models.ChecklistItem(
+                trip_id=db_trip.id, 
+                category="Clothes (Laundry)", 
+                item_name=cloth.item_name
+            )
+            db.add(db_item)
+
+        # Carry over custom items from the last Going Home trip (if this is not a returning trip but we still want custom items)
+        if last_home_trip:
+            last_checklist = db.query(models.ChecklistItem).filter(models.ChecklistItem.trip_id == last_home_trip.id).all()
+            default_names = {name.lower() for _, name in default_items}
+            for item in last_checklist:
+                if item.category != "Clothes (Laundry)" and item.item_name.lower() not in default_names:
+                    db_custom_item = models.ChecklistItem(
+                        trip_id=db_trip.id,
+                        category=item.category,
+                        item_name=item.item_name
+                    )
+                    db.add(db_custom_item)
 
     db.commit()
     return db_trip
@@ -320,50 +352,80 @@ def ai_quick_add(request: schemas.AIQuickAddRequest, db: Session = Depends(get_d
     db.commit()
     db.refresh(db_trip)
     
-    # 2. Generate Default Essentials + Custom Extracted Items
-    default_items = [
-        ("Electronics", "Phone Charger"), ("Electronics", "Laptop"),
-        ("Essentials", "Toothbrush"), ("Essentials", "Wallet/ID")
-    ]
-    
-    added_item_names = set()
-    for category, name in default_items:
-        db_item = models.ChecklistItem(trip_id=db_trip.id, category=category, item_name=name)
-        db.add(db_item)
-        added_item_names.add(name.lower())
-        
-    for category, name in extracted_items:
-        # Avoid exact duplicate item names
-        clean_name = name.split(" ")[0].lower() # e.g. "laptop" from "Laptop 💻"
-        if not any(clean_name in existing for existing in added_item_names):
-            db_item = models.ChecklistItem(trip_id=db_trip.id, category=category, item_name=name)
-            db.add(db_item)
-            added_item_names.add(clean_name)
-            
-    # 3. Handle Clothes based on trip type
-    if trip_type == "Going Home":
-        clothes_to_pack = db.query(models.ClothingItem).filter(
-            models.ClothingItem.user_id == request.user_id, 
-            models.ClothingItem.is_clean == False
-        ).all()
-    elif trip_type == "Returning" or trip_type == "Returning to PG":
-        clothes_to_pack = db.query(models.ClothingItem).filter(
-            models.ClothingItem.user_id == request.user_id, 
-            models.ClothingItem.is_clean == True
-        ).all()
-    else:
-        clothes_to_pack = []
-        
-    for cloth in clothes_to_pack:
-        if cloth.item_name.lower() not in added_item_names:
+    is_returning = trip_type in ["Returning", "Returning to PG"]
+    last_home_trip = db.query(models.Trip).filter(
+        models.Trip.user_id == request.user_id, 
+        models.Trip.trip_type.not_in(["Returning", "Returning to PG"])
+    ).order_by(models.Trip.id.desc()).first()
+
+    if is_returning and last_home_trip:
+        # Mirror EXACTLY what was in the last Going Home trip
+        last_checklist = db.query(models.ChecklistItem).filter(models.ChecklistItem.trip_id == last_home_trip.id).all()
+        for item in last_checklist:
             db_item = models.ChecklistItem(
-                trip_id=db_trip.id, 
-                category="Clothes (Laundry)", 
-                item_name=cloth.item_name
+                trip_id=db_trip.id,
+                category=item.category,
+                item_name=item.item_name,
+                is_completed=False
             )
             db.add(db_item)
-            added_item_names.add(cloth.item_name.lower())
+    else:
+        # 2. Generate Default Essentials + Custom Extracted Items
+        default_items = [
+            ("Electronics", "Phone Charger"), ("Electronics", "Laptop"),
+            ("Essentials", "Toothbrush"), ("Essentials", "Wallet/ID")
+        ]
+        
+        added_item_names = set()
+        for category, name in default_items:
+            db_item = models.ChecklistItem(trip_id=db_trip.id, category=category, item_name=name)
+            db.add(db_item)
+            added_item_names.add(name.lower())
+            
+        for category, name in extracted_items:
+            # Avoid exact duplicate item names
+            clean_name = name.split(" ")[0].lower() # e.g. "laptop" from "Laptop 💻"
+            if not any(clean_name in existing for existing in added_item_names):
+                db_item = models.ChecklistItem(trip_id=db_trip.id, category=category, item_name=name)
+                db.add(db_item)
+                added_item_names.add(clean_name)
                 
+        # 3. Handle Clothes based on trip type
+        if trip_type == "Going Home":
+            clothes_to_pack = db.query(models.ClothingItem).filter(
+                models.ClothingItem.user_id == request.user_id, 
+                models.ClothingItem.is_clean == False
+            ).all()
+        else:
+            clothes_to_pack = db.query(models.ClothingItem).filter(
+                models.ClothingItem.user_id == request.user_id, 
+                models.ClothingItem.is_clean == True
+            ).all()
+            
+        for cloth in clothes_to_pack:
+            if cloth.item_name.lower() not in added_item_names:
+                db_item = models.ChecklistItem(
+                    trip_id=db_trip.id, 
+                    category="Clothes (Laundry)", 
+                    item_name=cloth.item_name
+                )
+                db.add(db_item)
+                added_item_names.add(cloth.item_name.lower())
+                    
+        # 4. Carry over custom items from the last Going Home trip
+        if last_home_trip:
+            last_checklist = db.query(models.ChecklistItem).filter(models.ChecklistItem.trip_id == last_home_trip.id).all()
+            default_names = {name.lower() for _, name in default_items}
+            for item in last_checklist:
+                if item.category != "Clothes (Laundry)" and item.item_name.lower() not in added_item_names and item.item_name.lower() not in default_names:
+                    db_custom_item = models.ChecklistItem(
+                        trip_id=db_trip.id,
+                        category=item.category,
+                        item_name=item.item_name
+                    )
+                    db.add(db_custom_item)
+                    added_item_names.add(item.item_name.lower())
+
     db.commit()
     
     date_str = target_date.strftime("%A, %d %b %Y")

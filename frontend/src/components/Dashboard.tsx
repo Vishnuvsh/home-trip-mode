@@ -146,6 +146,11 @@ const AddTripModal = ({ onClose, onAdd }: { onClose: () => void, onAdd: () => vo
               value={form.date}
               min={new Date().toISOString().split('T')[0]}
               onChange={e => handleChange('date', e.target.value)}
+              onClick={(e) => {
+                if ('showPicker' in HTMLInputElement.prototype) {
+                  (e.target as HTMLInputElement).showPicker();
+                }
+              }}
             />
             {error && <span style={{ color: 'var(--red)', fontSize: '12px', marginTop: '4px' }}>{error}</span>}
           </div>
