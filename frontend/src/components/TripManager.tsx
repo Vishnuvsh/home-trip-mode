@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { CheckCircle2, Package, AlertCircle, Check, Loader2, Sparkles, Navigation, Trash2, Plus, Filter } from 'lucide-react';
+import { CheckCircle2, Package, AlertCircle, Check, Loader2, Sparkles, Navigation, Trash2, Plus } from 'lucide-react';
 import api from '../api/axios';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';

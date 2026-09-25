@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import './Documentation.css';
-import { BookOpen, Map, Settings, Layout, Server, Code, Sparkles, X, CheckSquare, MessageSquare, Clock } from 'lucide-react';
+import { BookOpen, Layout, Sparkles, X, CheckSquare, MessageSquare, Clock } from 'lucide-react';
 
 const Demos: Record<string, any> = {
   dashboard: {
