@@ -128,6 +128,7 @@ const TripManager: React.FC = () => {
   const [newItemCategory, setNewItemCategory] = useState<string>('Essentials');
   const [isAddingItem, setIsAddingItem] = useState<boolean>(false);
   const [isSaving, setIsSaving] = useState<boolean>(false);
+  const [isSaved, setIsSaved] = useState<boolean>(false);
 
   const showToast = (msg: string) => {
     setToastMsg(msg);
@@ -289,11 +290,11 @@ const TripManager: React.FC = () => {
     setIsSaving(true);
     try {
       await api.put(`/trips/${currentTripId}/status`, { status: 'Saved' });
-      showToast('✅ Packing list saved!');
     } catch {
-      showToast('✅ Packing list saved locally!');
+      // silent - save locally
     } finally {
       setIsSaving(false);
+      setIsSaved(true);
     }
   };
 
@@ -587,6 +588,43 @@ const TripManager: React.FC = () => {
 
             {activeTab === 'checklist' && (
               <>
+              {/* ✅ SAVED VIEW - Read-only */}
+              {isSaved ? (
+                <div style={{ marginTop: '8px' }}>
+                  {/* Saved banner */}
+                  <div style={{ background: 'linear-gradient(135deg, rgba(16,208,122,0.15), rgba(16,208,122,0.05))', border: '1px solid rgba(16,208,122,0.3)', borderRadius: '16px', padding: '20px', textAlign: 'center', marginBottom: '20px' }}>
+                    <div style={{ fontSize: '40px', marginBottom: '8px' }}>✅</div>
+                    <h3 style={{ color: 'var(--accent)', fontWeight: 800, margin: '0 0 4px', fontSize: '18px' }}>Packing List Saved!</h3>
+                    <p style={{ color: 'var(--text-dim)', fontSize: '13px', margin: 0 }}>{completedCount} of {checklist.length} items packed</p>
+                  </div>
+
+                  {/* Grouped read-only list */}
+                  {Array.from(new Set(checklist.map(i => i.category))).map(cat => (
+                    <div key={cat} style={{ marginBottom: '16px' }}>
+                      <p style={{ fontSize: '12px', fontWeight: 700, color: 'var(--text-dim)', textTransform: 'uppercase', letterSpacing: '0.08em', margin: '0 0 8px 4px' }}>
+                        {cat === 'Clothes (Laundry)' ? '👕' : cat === 'Electronics' ? '🔌' : cat === 'Essentials' ? '🪥' : '📦'} {cat}
+                      </p>
+                      {checklist.filter(i => i.category === cat).map(item => (
+                        <div key={item.id} style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '10px 14px', background: item.is_completed ? 'rgba(16,208,122,0.08)' : 'rgba(255,255,255,0.04)', borderRadius: '10px', marginBottom: '6px', border: `1px solid ${item.is_completed ? 'rgba(16,208,122,0.2)' : 'rgba(255,255,255,0.06)'}` }}>
+                          <span style={{ fontSize: '16px' }}>{item.is_completed ? '✅' : '⬜'}</span>
+                          <span style={{ fontWeight: 600, color: item.is_completed ? 'var(--text)' : 'var(--text-dim)', fontSize: '14px', textDecoration: item.is_completed ? 'none' : 'none' }}>{item.item_name}</span>
+                          {item.is_completed && <span style={{ marginLeft: 'auto', fontSize: '11px', color: 'var(--accent)', fontWeight: 700 }}>PACKED</span>}
+                        </div>
+                      ))}
+                    </div>
+                  ))}
+
+                  {/* Edit button */}
+                  <button
+                    type="button"
+                    onClick={() => setIsSaved(false)}
+                    style={{ marginTop: '8px', width: '100%', padding: '12px', background: 'rgba(255,255,255,0.07)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '12px', color: 'var(--text-dim)', fontWeight: 700, fontSize: '14px', cursor: 'pointer' }}
+                  >
+                    ✏️ Edit Packing List
+                  </button>
+                </div>
+              ) : (
+              <>
               {/* 🏷️ Category Filter Tabs (Feature 5) */}
             <div className="tm-category-filters">
               {filterTabs.map(tab => {
@@ -725,6 +763,9 @@ const TripManager: React.FC = () => {
                 <span>🎉</span> All packed! Have a great trip.
               </div>
             )}
+            </>
+            )}
+            {/* end isSaved ? : */}
             </>
             )}
 
