@@ -316,7 +316,7 @@ def parse_trip_with_gemini(prompt: str):
         raise HTTPException(status_code=500, detail="Gemini API Key is missing. Please configure it in .env file.")
         
     try:
-        model = genai.GenerativeModel('gemini-3.6-flash', generation_config={"response_mime_type": "application/json"})
+        model = genai.GenerativeModel('gemini-2.0-flash', generation_config={"response_mime_type": "application/json"})
         today = datetime.utcnow().strftime("%Y-%m-%d")
         
         sys_prompt = f"""You are an AI Smart Packing Assistant. Today's date is {today}.
