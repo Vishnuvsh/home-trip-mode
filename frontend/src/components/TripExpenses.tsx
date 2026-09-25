@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { DollarSign, Plus, Trash2, Loader2 } from 'lucide-react';
 import api from '../api/axios';
 
